@@ -26,6 +26,7 @@ import ItineraryMap from "../components/ItineraryMap";
 import LivePreview from "../components/LivePreview";
 import { exportItineraryToPdf } from "../utils/pdfGenerator";
 import { buildDriveLine, buildTransitLine } from "../utils/routeUtils";
+import { API_BASE_URL } from "../utils/api";
 
 export default function GuestItineraryView({ refNumber: propRef }) {
   // Extract reference number from URL if not provided via props: e.g. /view/LT-2026-0001
@@ -48,7 +49,7 @@ export default function GuestItineraryView({ refNumber: propRef }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/itineraries/public/${encodeURIComponent(activeRef)}`);
+        const res = await fetch(`${API_BASE_URL}/api/itineraries/public/${encodeURIComponent(activeRef)}`);
         if (!res.ok) {
           throw new Error(`Itinerary "${activeRef}" not found.`);
         }
@@ -64,7 +65,7 @@ export default function GuestItineraryView({ refNumber: propRef }) {
         console.warn("Guest view load error, trying fallback list:", err);
         // Try fallback list fetch
         try {
-          const listRes = await fetch("/api/itinerary/list");
+          const listRes = await fetch(`${API_BASE_URL}/api/itinerary/list`);
           const listData = await listRes.json();
           const found = (listData.itineraries || []).find(
             (it) => it.refNumber === activeRef || it.id === activeRef

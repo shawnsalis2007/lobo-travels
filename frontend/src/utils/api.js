@@ -6,13 +6,18 @@
  * 2. Token Diet: Only send array of unique attraction names (strings)
  */
 
+export const API_BASE_URL = "https://lobo-travels.onrender.com";
+
+/**
+ * Enriches unique attractions with Wikipedia URLs and Pexels destination photos.
+ */
 export async function fetchAttractionDetails(attractionNames) {
   if (!attractionNames || attractionNames.length === 0) {
     return { success: true, lookup: {}, count: 0 };
   }
 
   try {
-    const response = await fetch("/api/itinerary/attractions", {
+    const response = await fetch(`${API_BASE_URL}/api/itinerary/attractions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -40,7 +45,7 @@ export async function fetchAttractionDetails(attractionNames) {
  */
 export async function generateSequentialRef() {
   try {
-    const response = await fetch("/api/itinerary/generate-ref", {
+    const response = await fetch(`${API_BASE_URL}/api/itinerary/generate-ref`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
@@ -67,7 +72,7 @@ export async function generateSequentialRef() {
  */
 export async function autofillHotel(hotelName, city = "") {
   try {
-    const response = await fetch("/api/hotels/autofill", {
+    const response = await fetch(`${API_BASE_URL}/api/hotels/autofill`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ hotelName, city }),
@@ -87,7 +92,7 @@ export async function autofillHotel(hotelName, city = "") {
  * Saves current itinerary to Firebase Firestore.
  */
 export async function saveItineraryToFirebase(itinerary) {
-  const response = await fetch("/api/itinerary/save", {
+  const response = await fetch(`${API_BASE_URL}/api/itinerary/save`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -107,7 +112,7 @@ export async function saveItineraryToFirebase(itinerary) {
  * Retrieves all saved itineraries from Firebase Firestore.
  */
 export async function fetchSavedItineraries() {
-  const response = await fetch("/api/itinerary/list");
+  const response = await fetch(`${API_BASE_URL}/api/itinerary/list`);
   if (!response.ok) {
     throw new Error("Failed to fetch saved itineraries.");
   }
@@ -118,7 +123,7 @@ export async function fetchSavedItineraries() {
  * Retrieves a specific itinerary by reference number.
  */
 export async function fetchItineraryByRef(refNumber) {
-  const response = await fetch(`/api/itinerary/${encodeURIComponent(refNumber)}`);
+  const response = await fetch(`${API_BASE_URL}/api/itinerary/${encodeURIComponent(refNumber)}`);
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.message || "Itinerary not found.");
@@ -131,7 +136,7 @@ export async function fetchItineraryByRef(refNumber) {
  */
 export async function checkBackendHealth() {
   try {
-    const res = await fetch("/api/itinerary/health");
+    const res = await fetch(`${API_BASE_URL}/api/itinerary/health`);
     if (!res.ok) return { online: false };
     const data = await res.json();
     return { online: true, ...data };
