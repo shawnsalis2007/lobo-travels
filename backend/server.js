@@ -18,6 +18,9 @@ app.use(express.json());
 app.use("/api/itinerary", itineraryRoutes);
 app.use("/api/itineraries", itineraryRoutes);
 app.use("/api/hotels", hotelRoutes);
+app.use("/api", itineraryRoutes);
+app.use("/itinerary", itineraryRoutes);
+app.use("/hotels", hotelRoutes);
 
 // Root health & info
 app.get("/", (req, res) => {

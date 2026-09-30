@@ -128,14 +128,22 @@ router.post("/save", async (req, res) => {
     };
 
     // Save to Firestore if available
+    let savedToFirestore = false;
     if (isFirestoreAvailable && db) {
-      await db
-        .collection(ITINERARIES_COLLECTION)
-        .doc(refNumber)
-        .set(itineraryDocument, { merge: true });
-      console.log(`💾 [Firestore] Saved itinerary document "${refNumber}"`);
-    } else {
-      fallbackItineraries.set(refNumber, itineraryDocument);
+      try {
+        await db
+          .collection(ITINERARIES_COLLECTION)
+          .doc(refNumber)
+          .set(itineraryDocument, { merge: true });
+        console.log(`💾 [Firestore] Saved itinerary document "${refNumber}"`);
+        savedToFirestore = true;
+      } catch (fsErr) {
+        console.warn(`⚠️ [Firestore Save Warning] Falling back to local memory:`, fsErr.message);
+      }
+    }
+
+    fallbackItineraries.set(refNumber, itineraryDocument);
+    if (!savedToFirestore) {
       console.log(`💾 [Fallback Memory] Saved itinerary document "${refNumber}"`);
     }
 
@@ -145,13 +153,13 @@ router.post("/save", async (req, res) => {
       voucherRef,
       message: `Itinerary ${refNumber} saved successfully!`,
       itinerary: itineraryDocument,
-      storedIn: isFirestoreAvailable ? "Firebase Firestore" : "Local Memory Store",
+      storedIn: savedToFirestore ? "Firebase Firestore" : "Local Memory Store",
     });
   } catch (error) {
     console.error("❌ [API Error] Failed to save itinerary:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to save itinerary to Firestore.",
+      message: "Failed to save itinerary to database.",
       error: error.message,
     });
   }
@@ -164,18 +172,26 @@ router.post("/save", async (req, res) => {
 router.get("/list", async (req, res) => {
   try {
     const list = [];
+    let usedFirestore = false;
 
     if (isFirestoreAvailable && db) {
-      const snapshot = await db
-        .collection(ITINERARIES_COLLECTION)
-        .orderBy("updatedAt", "desc")
-        .limit(50)
-        .get();
+      try {
+        const snapshot = await db
+          .collection(ITINERARIES_COLLECTION)
+          .orderBy("updatedAt", "desc")
+          .limit(50)
+          .get();
 
-      snapshot.forEach((doc) => {
-        list.push(doc.data());
-      });
-    } else {
+        snapshot.forEach((doc) => {
+          list.push(doc.data());
+        });
+        usedFirestore = true;
+      } catch (fsErr) {
+        console.warn(`⚠️ [Firestore List Warning] Falling back to local memory:`, fsErr.message);
+      }
+    }
+
+    if (!usedFirestore) {
       for (const val of fallbackItineraries.values()) {
         list.push(val);
       }
@@ -186,14 +202,15 @@ router.get("/list", async (req, res) => {
       success: true,
       count: list.length,
       itineraries: list,
-      source: isFirestoreAvailable ? "Firebase Firestore" : "Local Memory Store",
+      source: usedFirestore ? "Firebase Firestore" : "Local Memory Store",
     });
   } catch (error) {
     console.error("❌ [API Error] Failed to list itineraries:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to list itineraries from database.",
-      error: error.message,
+    return res.json({
+      success: true,
+      count: 0,
+      itineraries: [],
+      source: "Local Memory Store (Empty Fallback)",
     });
   }
 });
@@ -322,26 +339,42 @@ router.get("/public/:ref", async (req, res) => {
       });
     }
 
-    let foundItinerary = null;
+  let foundItinerary = null;
+    let usedFirestore = false;
 
     if (isFirestoreAvailable && db) {
-      const docSnap = await db.collection(ITINERARIES_COLLECTION).doc(ref).get();
-      if (docSnap.exists) {
-        foundItinerary = docSnap.data();
-      } else {
-        // Try searching by refNumber field query
-        const querySnap = await db
-          .collection(ITINERARIES_COLLECTION)
-          .where("refNumber", "==", ref)
-          .limit(1)
-          .get();
-        if (!querySnap.empty) {
-          foundItinerary = querySnap.docs[0].data();
+      try {
+        const docSnap = await db.collection(ITINERARIES_COLLECTION).doc(ref).get();
+        if (docSnap.exists) {
+          foundItinerary = docSnap.data();
+          usedFirestore = true;
+        } else {
+          // Try searching by refNumber field query
+          const querySnap = await db
+            .collection(ITINERARIES_COLLECTION)
+            .where("refNumber", "==", ref)
+            .limit(1)
+            .get();
+          if (!querySnap.empty) {
+            foundItinerary = querySnap.docs[0].data();
+            usedFirestore = true;
+          }
         }
+      } catch (fsErr) {
+        console.warn(`⚠️ [Firestore Public Get Warning] for "${ref}":`, fsErr.message);
       }
-    } else {
-      if (fallbackItineraries.has(ref)) {
-        foundItinerary = fallbackItineraries.get(ref);
+    }
+
+    if (!foundItinerary && fallbackItineraries.has(ref)) {
+      foundItinerary = fallbackItineraries.get(ref);
+    }
+
+    if (!foundItinerary) {
+      for (const it of fallbackItineraries.values()) {
+        if (it.refNumber === ref || it.id === ref || it.voucherRef === ref) {
+          foundItinerary = it;
+          break;
+        }
       }
     }
 
@@ -356,7 +389,7 @@ router.get("/public/:ref", async (req, res) => {
       success: true,
       refNumber: foundItinerary.refNumber || ref,
       itinerary: foundItinerary,
-      source: isFirestoreAvailable ? "Firebase Firestore" : "Local Memory Store",
+      source: usedFirestore ? "Firebase Firestore" : "Local Memory Store",
     });
   } catch (error) {
     console.error(`❌ [API Error] Public view error for ${req.params.ref}:`, error);
@@ -384,15 +417,30 @@ router.get("/:refNumber", async (req, res) => {
     }
 
     let foundItinerary = null;
+    let usedFirestore = false;
 
     if (isFirestoreAvailable && db) {
-      const docSnap = await db.collection(ITINERARIES_COLLECTION).doc(refNumber).get();
-      if (docSnap.exists) {
-        foundItinerary = docSnap.data();
+      try {
+        const docSnap = await db.collection(ITINERARIES_COLLECTION).doc(refNumber).get();
+        if (docSnap.exists) {
+          foundItinerary = docSnap.data();
+          usedFirestore = true;
+        }
+      } catch (fsErr) {
+        console.warn(`⚠️ [Firestore Get Warning] for "${refNumber}":`, fsErr.message);
       }
-    } else {
-      if (fallbackItineraries.has(refNumber)) {
-        foundItinerary = fallbackItineraries.get(refNumber);
+    }
+
+    if (!foundItinerary && fallbackItineraries.has(refNumber)) {
+      foundItinerary = fallbackItineraries.get(refNumber);
+    }
+
+    if (!foundItinerary) {
+      for (const it of fallbackItineraries.values()) {
+        if (it.refNumber === refNumber || it.id === refNumber || it.voucherRef === refNumber) {
+          foundItinerary = it;
+          break;
+        }
       }
     }
 
@@ -407,7 +455,7 @@ router.get("/:refNumber", async (req, res) => {
       success: true,
       refNumber,
       itinerary: foundItinerary,
-      source: isFirestoreAvailable ? "Firebase Firestore" : "Local Memory Store",
+      source: usedFirestore ? "Firebase Firestore" : "Local Memory Store",
     });
   } catch (error) {
     console.error(`❌ [API Error] Failed to retrieve itinerary ${req.params.refNumber}:`, error);
