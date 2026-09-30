@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────
+   STRICT A4 PDF PAGE GUARD
+   Applied to both #itinerary-pdf-target and #voucher-pdf-target
+   ────────────────────────────────────────────── */
+.pdf-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* Page-break avoidance helpers */
+.avoid-break,
+.day-card,
+.hotel-vehicle-card,
+.terms-box,
+.page-break-avoid {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+/* Square attraction thumbnail tiles in PDF */
+.attraction-thumb {
+  @apply w-24 h-24 object-cover rounded-lg overflow-hidden;
+}
+
+/* Meal badge chips */
+.meal-badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border;
+}
+
+/* ──────────────────────────────────────────────
+   PRINT / MEDIA OVERRIDES
+   ────────────────────────────────────────────── */
+@media print {
+  body { background: white !important; }
+  .no-print { display: none !important; }
+  .avoid-break, .day-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800 bg-slate-50 selection:bg-blue-100 selection:text-blue-900;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print & PDF styling */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+  .page-break-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+.pdf-mode {
+  background: white !important;
+  color: #0f172a !important;
+  width: 210mm !important;
+  min-height: 297mm !important;
+  margin: 0 auto !important;
+  padding: 18mm 16mm !important;
+  box-sizing: border-box !important;
+}
+
+.pdf-mode .page-break-avoid {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
