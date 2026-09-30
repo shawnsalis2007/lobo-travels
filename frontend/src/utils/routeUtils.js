@@ -206,10 +206,18 @@ export function buildTransitLine(fromLocation, toLocation, transit = null) {
  * @returns {string[]}
  */
 export function getAllAttractionsForDay(day) {
-  if (!Array.isArray(day.stops)) return day.attractions || [];
-  return day.stops
-    .filter((s) => !s.noSightseeing)
-    .flatMap((s) => s.attractions || []);
+  if (!day) return [];
+  const raw = Array.isArray(day.stops)
+    ? day.stops.filter((s) => !s.noSightseeing).flatMap((s) => s.attractions || [])
+    : day.attractions || [];
+
+  return raw
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (item && typeof item === "object" && item.name) return String(item.name).trim();
+      return "";
+    })
+    .filter(Boolean);
 }
 
 /**
