@@ -15,7 +15,7 @@ const PDF_OPTIONS = (filename) => ({
     scale: 2,
     useCORS: true,
     letterRendering: true,
-    allowTaint: false,
+    allowTaint: true,
     logging: false,
   },
   jsPDF: {

@@ -6,7 +6,13 @@
  * 2. Token Diet: Only send array of unique attraction names (strings)
  */
 
-export const API_BASE_URL = "https://lobo-travels.onrender.com";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL
+    : typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? ""
+    : "https://lobo-travels.onrender.com";
 
 /**
  * Enriches unique attractions with Wikipedia URLs and Pexels destination photos.
@@ -16,8 +22,10 @@ export async function fetchAttractionDetails(attractionNames) {
     return { success: true, lookup: {}, count: 0 };
   }
 
+  const endpoint = `${API_BASE_URL}/api/itinerary/attractions`;
+
   try {
-    const response = await fetch(`${API_BASE_URL}/api/itinerary/attractions`, {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,6 +42,20 @@ export async function fetchAttractionDetails(attractionNames) {
 
     return await response.json();
   } catch (error) {
+    // If running with absolute remote URL fails, attempt relative proxy if in browser
+    if (API_BASE_URL && typeof window !== "undefined" && window.location.hostname === "localhost") {
+      try {
+        console.warn("Retrying attractions call via local proxy...");
+        const fallbackRes = await fetch("/api/itinerary/attractions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attractions: attractionNames }),
+        });
+        if (fallbackRes.ok) return await fallbackRes.json();
+      } catch {
+        // ignore fallback error and throw original
+      }
+    }
     console.error("API Call error:", error);
     throw error;
   }
@@ -112,11 +134,16 @@ export async function saveItineraryToFirebase(itinerary) {
  * Retrieves all saved itineraries from Firebase Firestore.
  */
 export async function fetchSavedItineraries() {
-  const response = await fetch(`${API_BASE_URL}/api/itinerary/list`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch saved itineraries.");
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/itinerary/list`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch saved itineraries.");
+    }
+    return await response.json();
+  } catch (err) {
+    console.warn("Saved itineraries list fetch error:", err.message);
+    return { success: true, count: 0, itineraries: [] };
   }
-  return await response.json();
 }
 
 /**

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Hotel, Car, Utensils, Moon, Users, ShieldAlert, ChevronDown } from "lucide-react";
+import { Hotel, Car, Utensils, Moon, Users, ShieldAlert, ChevronDown, Sparkles } from "lucide-react";
 import { PRELOADED_HOTELS, PRELOADED_VEHICLES, MEAL_PLANS } from "../data/defaultItinerary";
 import { VEHICLE_BRANDS, VEHICLE_MODELS_BY_BRAND } from "../utils/routeUtils";
+import { autofillHotel } from "../utils/api";
 
 export default function HotelVehicleSelector({
   selectedHotel,
@@ -11,6 +12,8 @@ export default function HotelVehicleSelector({
   showCostOnItinerary,
   onToggleCostVisibility,
 }) {
+  const [isAutofilling, setIsAutofilling] = useState(false);
+
   // Vehicle brand/model state
   const [vehicleBrand, setVehicleBrand] = useState(() => {
     // Try to guess brand from existing vehicle name
@@ -21,6 +24,26 @@ export default function HotelVehicleSelector({
   });
   const [vehicleModel, setVehicleModel] = useState("");
   const [isOtherVehicle, setIsOtherVehicle] = useState(false);
+
+  const handleAutofillPlaces = async () => {
+    if (!selectedHotel?.name) return;
+    setIsAutofilling(true);
+    try {
+      const res = await autofillHotel(selectedHotel.name, selectedHotel.city || "");
+      if (res.success && res.hotel) {
+        onUpdateHotel({
+          address: res.hotel.address || selectedHotel.address,
+          mapsUrl: res.hotel.mapsUrl || selectedHotel.mapsUrl,
+          phone: res.hotel.phone || selectedHotel.phone,
+          rating: res.hotel.rating || selectedHotel.rating,
+        });
+      }
+    } catch (err) {
+      console.warn("Hotel autofill error:", err);
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
 
   const handleHotelSelect = (hotelId) => {
     const found = PRELOADED_HOTELS.find((h) => h.id === hotelId);
@@ -92,9 +115,23 @@ export default function HotelVehicleSelector({
 
           {/* Editable Hotel Name */}
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">
-              Hotel Name & Location
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-slate-600">
+                Hotel Name & Location
+              </label>
+              {selectedHotel.name && (
+                <button
+                  type="button"
+                  onClick={handleAutofillPlaces}
+                  disabled={isAutofilling}
+                  className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center space-x-1 cursor-pointer transition-colors"
+                  title="Autofill address, map link, phone & rating from Google Places"
+                >
+                  <Sparkles className={`w-3 h-3 ${isAutofilling ? "animate-spin" : ""}`} />
+                  <span>{isAutofilling ? "Searching Places..." : "Autofill via Places"}</span>
+                </button>
+              )}
+            </div>
             <input
               type="text"
               value={selectedHotel.name || ""}
