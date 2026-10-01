@@ -101,7 +101,7 @@ export default function KPICardsBar({
           <button
             type="button"
             onClick={onReset}
-            className="bg-white hover:bg-slate-50 p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all cursor-pointer flex items-center gap-2 text-left group active:scale-95"
+            className="bg-white hover:bg-slate-50 p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all cursor-pointer flex items-center justify-center gap-2 text-left group active:scale-95 min-h-[44px]"
             title="Reset itinerary to default template"
           >
             <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-800 transition-colors shrink-0">
@@ -122,7 +122,7 @@ export default function KPICardsBar({
             type="button"
             onClick={onSave}
             disabled={isSaving}
-            className="bg-emerald-50 hover:bg-emerald-100/80 p-2.5 sm:p-3 rounded-2xl border border-emerald-300 shadow-2xs hover:border-emerald-400 transition-all cursor-pointer flex items-center gap-2 text-left group active:scale-95 disabled:opacity-50"
+            className="bg-emerald-50 hover:bg-emerald-100/80 p-2.5 sm:p-3 rounded-2xl border border-emerald-300 shadow-2xs hover:border-emerald-400 transition-all cursor-pointer flex items-center justify-center gap-2 text-left group active:scale-95 disabled:opacity-50 min-h-[44px]"
             title="Save current itinerary to Firestore database"
           >
             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 group-hover:bg-emerald-200 transition-colors shrink-0">
@@ -142,7 +142,7 @@ export default function KPICardsBar({
           <button
             type="button"
             onClick={onCreateBlank}
-            className="w-full lg:w-auto px-4 py-2.5 sm:py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs rounded-2xl shadow-sm hover:shadow-md transition-all transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer border border-amber-400/40"
+            className="flex-1 sm:flex-initial w-full sm:w-auto px-4 py-2.5 sm:py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs rounded-2xl shadow-sm hover:shadow-md transition-all transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer border border-amber-400/40 min-h-[44px]"
             title="Create a completely blank itinerary and add all information manually"
           >
             <FilePlus className="w-4 h-4 text-amber-100 shrink-0" />

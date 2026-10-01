@@ -62,6 +62,16 @@
   -webkit-overflow-scrolling: touch;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* ──────────────────────────────────────────────
    PRINT / MEDIA OVERRIDES
    ────────────────────────────────────────────── */

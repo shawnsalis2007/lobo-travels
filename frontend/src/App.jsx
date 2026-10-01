@@ -566,7 +566,7 @@ export default function App() {
       />
 
       {/* Main Studio Body */}
-      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-20 sm:pb-12">
+      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-28 sm:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Form Editor - Expanded, Spacious, Full Height */}
           <section
@@ -686,13 +686,16 @@ export default function App() {
       </main>
 
       {/* Mobile Bottom Sticky Navigation Bar */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-3 z-40 shadow-lg flex items-center justify-around">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-3 z-40 shadow-lg flex items-center justify-around pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={() => setActiveView("editor")}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all ${
+          onClick={() => {
+            setActiveView("editor");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all min-h-[44px] cursor-pointer ${
             activeView === "editor"
-              ? "text-blue-700 bg-blue-50"
+              ? "text-blue-700 bg-blue-50 font-extrabold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -702,10 +705,13 @@ export default function App() {
 
         <button
           type="button"
-          onClick={() => setActiveView("preview")}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all ${
+          onClick={() => {
+            setActiveView("preview");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all min-h-[44px] cursor-pointer ${
             activeView === "preview"
-              ? "text-blue-700 bg-blue-50"
+              ? "text-blue-700 bg-blue-50 font-extrabold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -718,10 +724,11 @@ export default function App() {
           onClick={() => {
             setShowRouteMap(true);
             setActiveView("map");
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all min-h-[44px] cursor-pointer ${
             activeView === "map"
-              ? "text-blue-700 bg-blue-50"
+              ? "text-blue-700 bg-blue-50 font-extrabold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -733,7 +740,7 @@ export default function App() {
           type="button"
           onClick={handleExportPdf}
           disabled={isExporting}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold text-blue-700 active:scale-95 transition-transform"
+          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold text-blue-700 active:scale-95 transition-transform min-h-[44px] cursor-pointer disabled:opacity-50"
         >
           <span className="text-sm">{isExporting ? "⏳" : "📥"}</span>
           <span>PDF</span>

@@ -247,7 +247,7 @@ export default function GlobalRefSearch({
 
       {/* ── Dropdown Suggestions Menu (Floats over all content) ───────────────── */}
       {isOpen && (query || allItems.length > 0 || isSearchingServer) && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[min(94vw,560px)] min-w-[340px] sm:min-w-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-[9999] text-slate-900 animate-scale-up max-h-[440px] flex flex-col">
+        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[min(96vw,560px)] min-w-[280px] sm:min-w-[480px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-[9999] text-slate-900 animate-scale-up max-h-[440px] flex flex-col">
           {/* Dropdown Header */}
           <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
             <span className="flex items-center gap-1">
