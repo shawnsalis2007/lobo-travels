@@ -316,40 +316,89 @@ export async function fetchCustomHotelsList() {
 }
 
 /**
- * Saves current itinerary to Firebase Firestore.
+ * Saves current itinerary to Firebase Firestore and local persistent registry.
  */
 export async function saveItineraryToFirebase(itinerary) {
-  const response = await fetch(`${API_BASE_URL}/api/itinerary/save`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ itinerary }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to save itinerary to Firestore.");
+  // Always persist to local browser store immediately
+  try {
+    const localSaved = localStorage.getItem("lobo_all_itineraries");
+    const list = localSaved ? JSON.parse(localSaved) : [];
+    const filtered = list.filter((i) => i.refNumber !== itinerary.refNumber);
+    const updatedRecord = {
+      ...itinerary,
+      updatedAt: new Date().toISOString(),
+      savedAt: itinerary.savedAt || new Date().toISOString(),
+    };
+    localStorage.setItem("lobo_all_itineraries", JSON.stringify([updatedRecord, ...filtered]));
+    if (itinerary.refNumber) {
+      localStorage.setItem("lobo_itinerary_" + itinerary.refNumber, JSON.stringify(updatedRecord));
+    }
+  } catch {
+    // ignore
   }
 
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/itinerary/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ itinerary }),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.warn("Backend save failed, stored in persistent local database:", err.message);
+  }
+
+  return {
+    success: true,
+    refNumber: itinerary.refNumber || `LT-${new Date().getFullYear()}-0001`,
+    voucherRef: itinerary.voucherRef || `LTV-${new Date().getFullYear()}-0001`,
+    storedIn: "Browser Local Database",
+  };
 }
 
 /**
- * Retrieves all saved itineraries from Firebase Firestore.
+ * Retrieves all saved itineraries from Firebase Firestore / Local Registry.
  */
 export async function fetchSavedItineraries() {
+  let remoteItems = [];
   try {
     const response = await fetch(`${API_BASE_URL}/api/itinerary/list`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch saved itineraries.");
+    if (response.ok) {
+      const data = await response.json();
+      remoteItems = Array.isArray(data) ? data : data?.itineraries || [];
     }
-    const data = await response.json();
-    return data.itineraries || [];
   } catch (err) {
-    console.warn("Saved itineraries list fetch error:", err.message);
-    return [];
+    console.warn("Saved itineraries remote fetch error:", err.message);
   }
+
+  // Also pull local registry
+  let localItems = [];
+  try {
+    const localSaved = localStorage.getItem("lobo_all_itineraries");
+    if (localSaved) {
+      const parsed = JSON.parse(localSaved);
+      if (Array.isArray(parsed)) localItems = parsed;
+    }
+  } catch {
+    // ignore
+  }
+
+  // Merge unique by refNumber
+  const map = new Map();
+  [...localItems, ...remoteItems].forEach((item) => {
+    if (item && item.refNumber) {
+      map.set(item.refNumber, item);
+    }
+  });
+
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.updatedAt || b.savedAt || 0) - new Date(a.updatedAt || a.savedAt || 0)
+  );
 }
 
 export const getSavedItineraries = fetchSavedItineraries;

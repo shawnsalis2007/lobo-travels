@@ -13,9 +13,40 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
     setError(null);
     try {
       const data = await fetchSavedItineraries();
-      setItineraries(data.itineraries || []);
+      const list = Array.isArray(data) ? data : data?.itineraries || [];
+
+      // Also ensure local storage records are merged
+      let localItems = [];
+      try {
+        const localSaved = localStorage.getItem("lobo_all_itineraries");
+        if (localSaved) {
+          const parsed = JSON.parse(localSaved);
+          if (Array.isArray(parsed)) localItems = parsed;
+        }
+      } catch {
+        // ignore
+      }
+
+      const map = new Map();
+      [...localItems, ...list].forEach((item) => {
+        if (item && item.refNumber) {
+          map.set(item.refNumber, item);
+        }
+      });
+
+      const merged = Array.from(map.values()).sort(
+        (a, b) => new Date(b.updatedAt || b.savedAt || 0) - new Date(a.updatedAt || a.savedAt || 0)
+      );
+
+      setItineraries(merged);
     } catch (err) {
       setError(err.message);
+      try {
+        const localSaved = localStorage.getItem("lobo_all_itineraries");
+        if (localSaved) setItineraries(JSON.parse(localSaved));
+      } catch {
+        // ignore
+      }
     } finally {
       setLoading(false);
     }
@@ -49,16 +80,16 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-800">
-                Saved Itineraries (Firebase Firestore)
+                Saved Tour Itineraries
               </h3>
               <p className="text-xs text-slate-500">
-                Select any stored itinerary to load into the builder & preview
+                Database &amp; Operations Registry • Load or review any saved tour
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,8 +107,8 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
           <button
             onClick={loadList}
             disabled={loading}
-            className="p-2.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 border border-slate-200 rounded-xl text-xs flex items-center space-x-1 shrink-0"
-            title="Refresh list from Firestore"
+            className="p-2.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 border border-slate-200 rounded-xl text-xs flex items-center space-x-1 shrink-0 cursor-pointer"
+            title="Refresh list from database"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -102,7 +133,7 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
           {loading && (
             <div className="py-12 text-center text-xs text-slate-500">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-600 mb-2" />
-              <span>Fetching itineraries from Firebase Firestore...</span>
+              <span>Fetching saved itineraries...</span>
             </div>
           )}
 
@@ -114,7 +145,7 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
 
           {!loading && filtered.length === 0 && (
             <div className="py-12 text-center text-xs text-slate-400">
-              No itineraries found in Firestore database. Click "Save to Cloud" to store your first itinerary!
+              No itineraries found in the database. Click &ldquo;Save Tour&rdquo; to store your first itinerary!
             </div>
           )}
 
@@ -124,28 +155,33 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
                 key={item.refNumber}
                 className="border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all rounded-xl p-4 bg-slate-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
               >
-                <div className="space-y-1">
+                <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center space-x-2">
-                    <span className="font-mono font-bold text-xs text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    <span className="font-mono font-bold text-xs text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 shrink-0">
                       {item.refNumber}
                     </span>
-                    <span className="text-xs font-bold text-slate-800 truncate max-w-[280px]">
+                    <span className="text-xs font-bold text-slate-800 truncate">
                       {item.destinationTitle || "Untitled Itinerary"}
                     </span>
+                    {item.status === "Confirmed" && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">
+                        Confirmed
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
                     <span className="flex items-center space-x-1">
-                      <User className="w-3 h-3 text-slate-400" />
-                      <span>{item.clientName || "Guest"}</span>
+                      <User className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate max-w-[140px]">{item.clientName || "Guest"}</span>
                     </span>
                     <span className="flex items-center space-x-1">
-                      <Clock className="w-3 h-3 text-slate-400" />
-                      <span>{item.tripDuration || "N/A"}</span>
+                      <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span>{item.tripDuration || `${item.days?.length || 1} Days`}</span>
                     </span>
-                    {item.updatedAt && (
-                      <span className="text-slate-400">
-                        {new Date(item.updatedAt).toLocaleDateString()}
+                    {item.estimatedCost && (
+                      <span className="font-semibold text-emerald-700">
+                        {item.estimatedCost}
                       </span>
                     )}
                   </div>
@@ -157,10 +193,10 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
                     onLoadItinerary(item);
                     onClose();
                   }}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors shrink-0 flex items-center space-x-1.5"
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors shrink-0 flex items-center space-x-1.5 cursor-pointer active:scale-95"
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Load Itinerary</span>
+                  <span>Load Tour</span>
                 </button>
               </div>
             ))}
@@ -168,10 +204,10 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
 
         {/* Modal Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span>Total Saved: {itineraries.length} itinerary documents</span>
+          <span>Total Saved: {itineraries.length} tour records</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium"
+            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium cursor-pointer transition-colors"
           >
             Close
           </button>
