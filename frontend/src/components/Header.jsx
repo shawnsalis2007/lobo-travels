@@ -56,8 +56,8 @@ export default function Header({
                   <span className="text-sm sm:text-base font-extrabold tracking-tight bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 bg-clip-text text-transparent whitespace-nowrap">
                     LOBO TRAVELS
                   </span>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                    Studio
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                    Operations TMS
                   </span>
                   {isConfirmed && (
                     <span className="inline-flex items-center space-x-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -67,7 +67,7 @@ export default function Header({
                   )}
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium whitespace-nowrap">
-                  Mandir Marg, New Delhi • 9811240072
+                  Dynamic Itinerary Engine • Dispatch &amp; Operations
                 </p>
               </div>
             </div>
@@ -140,17 +140,6 @@ export default function Header({
             >
               <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
               <span className="hidden sm:inline">Saved</span>
-            </button>
-
-            {/* Company Settings & Brand Configuration */}
-            <button
-              onClick={onOpenSettingsModal}
-              type="button"
-              className="px-2 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 bg-white rounded-lg border border-slate-200 transition-colors flex items-center space-x-1 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
-              title="Configure agency brand, logo, phones, and voucher terms"
-            >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
-              <span className="hidden sm:inline">Settings</span>
             </button>
 
             {/* Dedicated Generate Itinerary Button */}

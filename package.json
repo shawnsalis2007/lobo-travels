@@ -1,0 +1,12 @@
+{
+  "name": "lobo-travels-itinerary-builder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lobo Travels - Internal Operations & Dynamic Itinerary Management Engine",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "npm run dev --prefix frontend",
+    "server": "node backend/server.js",
+    "start": "node backend/server.js"
+  }
+}
