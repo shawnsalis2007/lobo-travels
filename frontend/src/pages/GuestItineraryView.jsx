@@ -417,6 +417,11 @@ export default function GuestItineraryView({ refNumber: propRef }) {
                                   }
                                   alt={att.name}
                                   className="w-20 h-20 object-cover rounded-lg overflow-hidden shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.src =
+                                      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80";
+                                  }}
                                 />
                                 <div className="min-w-0 flex-1">
                                   <h5 className="font-bold text-slate-900 truncate">{att.name}</h5>

@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────
-   STRICT A4 PDF PAGE GUARD
-   Applied to both #itinerary-pdf-target and #voucher-pdf-target
+   STRICT A4 PDF PAGE GUARD & MOBILE RESPONSIVENESS
    ────────────────────────────────────────────── */
 .pdf-page {
   width: 210mm;
@@ -12,6 +11,17 @@
   padding: 15mm;
   background: #ffffff;
   box-sizing: border-box;
+}
+
+/* On mobile screen view, adapt PDF preview to fill device width smoothly */
+@media screen and (max-width: 768px) {
+  .pdf-page {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 14px !important;
+    max-width: 100% !important;
+    border-radius: 16px;
+  }
 }
 
 /* Page-break avoidance helpers */
@@ -34,6 +44,19 @@
   @apply inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border;
 }
 
+/* Smooth touch scrolling & no-scrollbar helper */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ──────────────────────────────────────────────
    PRINT / MEDIA OVERRIDES
    ────────────────────────────────────────────── */
@@ -46,14 +69,14 @@
   }
 }
 
-
 @layer base {
   body {
     @apply antialiased text-slate-800 bg-slate-50 selection:bg-blue-100 selection:text-blue-900;
+    touch-action: manipulation;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar for desktop */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

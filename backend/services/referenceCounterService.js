@@ -26,7 +26,7 @@ export async function getNextSequentialReference() {
     try {
       const counterRef = db.collection(COUNTERS_COLLECTION).doc(ITINERARIES_COUNTER_DOC);
 
-      const result = await db.runTransaction(async (transaction) => {
+      const transactionPromise = db.runTransaction(async (transaction) => {
         const counterDoc = await transaction.get(counterRef);
 
         let nextNumber = 1;
@@ -52,6 +52,12 @@ export async function getNextSequentialReference() {
         return nextNumber;
       });
 
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Firestore transaction timeout")), 2500)
+      );
+
+      const result = await Promise.race([transactionPromise, timeoutPromise]);
+
       const coreId = `${currentYear}-${String(result).padStart(4, "0")}`;
       const itineraryRef = `LT-${coreId}`;
       const voucherRef = `LTV-${coreId}`;
@@ -59,7 +65,7 @@ export async function getNextSequentialReference() {
       console.log(`🔢 [Firestore Counter] Generated sequential ID: ${itineraryRef} / ${voucherRef}`);
       return { coreId, itineraryRef, voucherRef, source: "Firestore Transaction" };
     } catch (err) {
-      console.warn("⚠️ [Firestore Counter] Transaction error, falling back to in-memory counter:", err.message);
+      console.warn("⚠️ [Firestore Counter] Transaction error/timeout, falling back to in-memory counter:", err.message);
     }
   }
 

@@ -388,32 +388,12 @@ export default function App() {
         onSelectCoverPhoto={(cp) => handleFieldChange("coverPhoto", cp)}
       />
 
-      {/* View switcher (mobile & preview) */}
-      <div className="bg-white border-b border-slate-200 px-4 py-2 sm:hidden flex justify-center space-x-2">
-        <button
-          onClick={() => setActiveView("editor")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-            activeView === "editor" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
-          }`}
-        >
-          Form Editor
-        </button>
-        <button
-          onClick={() => setActiveView("preview")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-            activeView === "preview" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
-          }`}
-        >
-          Live Preview
-        </button>
-      </div>
-
       {/* Main Studio Body */}
-      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-20 sm:pb-6">
         {/* Left Form Editor */}
         <section
-          className={`lg:col-span-5 h-[calc(100vh-130px)] sticky top-24 ${
-            activeView === "preview" ? "hidden lg:block" : "block"
+          className={`lg:col-span-5 h-auto lg:h-[calc(100vh-130px)] lg:sticky lg:top-24 ${
+            activeView === "editor" || activeView === "split" ? "block" : "hidden lg:block"
           }`}
         >
           <ItineraryForm
@@ -433,7 +413,9 @@ export default function App() {
         {/* Right Live & Editable Preview */}
         <section
           className={`lg:col-span-7 ${
-            activeView === "editor" ? "hidden lg:block" : "block"
+            activeView === "preview" || activeView === "map" || activeView === "split"
+              ? "block"
+              : "hidden lg:block"
           }`}
         >
           {/* Top Helper & Controls Bar */}
@@ -443,7 +425,7 @@ export default function App() {
               <span>Live Interactive Preview</span>
               <span className="text-slate-300">•</span>
               <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                Click text to edit inline before export
+                Tap text to edit inline
               </span>
             </div>
 
@@ -460,7 +442,7 @@ export default function App() {
                 title="Toggle interactive route map"
               >
                 <Map className="w-3.5 h-3.5 text-blue-600" />
-                <span>{showRouteMap ? "Hide Route Map" : "Show Route Map"}</span>
+                <span>{showRouteMap ? "Hide Map" : "Show Map"}</span>
               </button>
 
               {itineraryData.status === "Confirmed" && (
@@ -475,8 +457,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Interactive Leaflet Route Map with CartoDB Positron / Voyager */}
-          {showRouteMap && (
+          {/* Interactive Leaflet Route Map */}
+          {(showRouteMap || activeView === "map") && (
             <ItineraryMap
               days={itineraryData.days}
               destinationTitle={itineraryData.destinationTitle}
@@ -484,12 +466,14 @@ export default function App() {
             />
           )}
 
-          <LivePreview
-            ref={previewRef}
-            itineraryData={itineraryData}
-            mapImageBase64={mapImageBase64}
-            onUpdateField={handleFieldChange}
-          />
+          {activeView !== "map" && (
+            <LivePreview
+              ref={previewRef}
+              itineraryData={itineraryData}
+              mapImageBase64={mapImageBase64}
+              onUpdateField={handleFieldChange}
+            />
+          )}
 
           {/* Hidden Travel Voucher DOM Container for client-side html2pdf export */}
           <div className="hidden">
@@ -497,6 +481,61 @@ export default function App() {
           </div>
         </section>
       </main>
+
+      {/* Mobile Bottom Sticky Navigation Bar */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-3 z-40 shadow-lg flex items-center justify-around">
+        <button
+          type="button"
+          onClick={() => setActiveView("editor")}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all ${
+            activeView === "editor"
+              ? "text-blue-700 bg-blue-50"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span className="text-sm">📝</span>
+          <span>Editor</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveView("preview")}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all ${
+            activeView === "preview"
+              ? "text-blue-700 bg-blue-50"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span className="text-sm">👁️</span>
+          <span>Preview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setShowRouteMap(true);
+            setActiveView("map");
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all ${
+            activeView === "map"
+              ? "text-blue-700 bg-blue-50"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span className="text-sm">🗺️</span>
+          <span>Map</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleExportPdf}
+          disabled={isExporting}
+          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold text-blue-700 active:scale-95 transition-transform"
+        >
+          <span className="text-sm">{isExporting ? "⏳" : "📥"}</span>
+          <span>PDF</span>
+        </button>
+      </nav>
     </div>
   );
 }

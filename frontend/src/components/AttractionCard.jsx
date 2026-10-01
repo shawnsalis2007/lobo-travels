@@ -25,6 +25,11 @@ export default function AttractionCard({ attraction, isPrintMode = false }) {
           className="w-24 h-24 object-cover rounded-lg overflow-hidden"
           loading="lazy"
           crossOrigin="anonymous"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src =
+              "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80";
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-40 group-hover:opacity-20 transition-opacity" />
         <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-xs text-white p-0.5 rounded text-[8px] flex items-center space-x-0.5">

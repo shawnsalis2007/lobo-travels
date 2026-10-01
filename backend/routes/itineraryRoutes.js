@@ -475,15 +475,26 @@ router.delete("/:refNumber", async (req, res) => {
   try {
     const { refNumber } = req.params;
 
-    if (isFirestoreAvailable && db) {
-      await db.collection(ITINERARIES_COLLECTION).doc(refNumber).delete();
-    } else {
-      fallbackItineraries.delete(refNumber);
+    if (!refNumber) {
+      return res.status(400).json({ success: false, message: "Reference number parameter is required." });
     }
+
+    let firestoreDeleted = false;
+    if (isFirestoreAvailable && db) {
+      try {
+        await db.collection(ITINERARIES_COLLECTION).doc(refNumber).delete();
+        firestoreDeleted = true;
+      } catch (fsErr) {
+        console.warn(`⚠️ [Firestore Delete Warning] for "${refNumber}":`, fsErr.message);
+      }
+    }
+
+    fallbackItineraries.delete(refNumber);
 
     return res.json({
       success: true,
       message: `Itinerary ${refNumber} deleted successfully.`,
+      source: firestoreDeleted ? "Firebase Firestore" : "Local Memory Store",
     });
   } catch (error) {
     console.error(`❌ [API Error] Failed to delete itinerary:`, error);

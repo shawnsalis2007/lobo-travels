@@ -69,7 +69,7 @@ function StopRow({ stop, stopIndex, totalStops, dayId, onUpdateStop, onDeleteSto
     >
       {/* Stop header row */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-1 min-w-[140px]">
           <span
             className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
               stop.isOvernight ? "bg-blue-700 text-white" : "bg-slate-200 text-slate-600"
@@ -81,8 +81,8 @@ function StopRow({ stop, stopIndex, totalStops, dayId, onUpdateStop, onDeleteSto
             type="text"
             value={stop.locationName}
             onChange={(e) => update({ locationName: e.target.value })}
-            placeholder="Stop location (e.g. Shimla, Manali, Delhi)"
-            className="text-xs font-semibold rounded-lg border-slate-300 p-1.5 text-slate-800 focus:border-blue-500 focus:ring-blue-500 w-40 sm:w-52"
+            placeholder="Stop location (e.g. Shimla, Manali)"
+            className="text-xs font-semibold rounded-lg border-slate-300 p-1.5 text-slate-800 focus:border-blue-500 focus:ring-blue-500 w-full sm:w-52"
           />
         </div>
 
@@ -480,7 +480,7 @@ export default function DayCardEditor({
         {/* Meal Badges */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-2">Meals Included</label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             {[
               { key: "breakfast", label: "Breakfast", Icon: Coffee, color: "text-amber-600" },
               { key: "lunch", label: "Lunch", Icon: UtensilsCrossed, color: "text-emerald-600" },
