@@ -5,10 +5,15 @@
 /* ──────────────────────────────────────────────
    STRICT A4 PDF PAGE GUARD & MOBILE RESPONSIVENESS
    ────────────────────────────────────────────── */
+@page {
+  size: A4 portrait;
+  margin: 8mm;
+}
+
 .pdf-page {
   width: 210mm;
   min-height: 297mm;
-  padding: 15mm;
+  padding: 12mm 14mm;
   background: #ffffff;
   box-sizing: border-box;
 }
@@ -70,9 +75,18 @@
 }
 
 @layer base {
+  html,
   body {
     @apply antialiased text-slate-800 bg-slate-50 selection:bg-blue-100 selection:text-blue-900;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
     touch-action: manipulation;
+  }
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
   }
 }
 

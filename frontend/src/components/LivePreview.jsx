@@ -22,7 +22,7 @@ import {
   Luggage,
 } from "lucide-react";
 import AttractionCard from "./AttractionCard";
-import { buildDriveLine, buildTransitLine, formatTransitHeadline } from "../utils/routeUtils";
+import { buildDriveLine, buildTransitLine, formatTransitHeadline, getDayDateInfo } from "../utils/routeUtils";
 
 const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }, ref) => {
   const {
@@ -423,6 +423,7 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                 const autoDrive = buildDriveLine(prevDay, day);
                 const meals = day.meals || {};
                 const hasMeals = meals.breakfast || meals.lunch || meals.dinner;
+                const dateInfo = getDayDateInfo(day, idx, travelDates);
 
                 return (
                   <div
@@ -431,10 +432,19 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                   >
                     {/* Day Header Bar */}
                     <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                      <div className="flex items-center space-x-2.5">
+                      <div className="flex items-center space-x-2.5 flex-wrap gap-y-1.5">
                         <span className="px-2.5 py-1 rounded-md bg-blue-900 text-white font-extrabold text-xs shrink-0 tracking-wider">
                           DAY {day.dayNumber || idx + 1}
                         </span>
+
+                        {/* Date & Day of Week Badge */}
+                        {dateInfo.display && (
+                          <span className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-xs font-bold flex items-center space-x-1.5 shrink-0">
+                            <Calendar className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span>{dateInfo.display}</span>
+                          </span>
+                        )}
+
                         <h4
                           contentEditable
                           suppressContentEditableWarning

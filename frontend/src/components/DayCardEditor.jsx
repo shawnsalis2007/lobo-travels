@@ -449,6 +449,44 @@ export default function DayCardEditor({
       </div>
 
       <div className="p-5 space-y-4">
+        {/* Date and Day of Week */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50/80 p-3 rounded-xl border border-slate-200/80">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1 flex items-center space-x-1">
+              <span>📅 Tour Date</span>
+              <span className="text-[10px] text-slate-400 font-normal">(e.g. 15 Oct 2026)</span>
+            </label>
+            <input
+              type="text"
+              value={day.date || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                const parsed = new Date(val);
+                let computedDay = day.dayOfWeek || "";
+                if (!isNaN(parsed.getTime()) && val.length >= 6) {
+                  computedDay = parsed.toLocaleDateString("en-US", { weekday: "long" });
+                }
+                onUpdate({ ...day, date: val, dayOfWeek: computedDay });
+              }}
+              placeholder="e.g. 15 Oct 2026"
+              className="w-full text-xs font-semibold rounded-lg border border-slate-300 p-2 text-slate-900 bg-white focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              Day of Week
+            </label>
+            <input
+              type="text"
+              value={day.dayOfWeek || ""}
+              onChange={(e) => onUpdate({ ...day, dayOfWeek: e.target.value })}
+              placeholder="e.g. Thursday, Friday"
+              className="w-full text-xs font-semibold rounded-lg border border-slate-300 p-2 text-slate-900 bg-white focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
         {/* Day Title */}
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">

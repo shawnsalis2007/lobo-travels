@@ -43,14 +43,18 @@ export function createStop(locationName = "") {
 /**
  * Creates a blank day with one default stop.
  * @param {number} dayNumber
+ * @param {string} [date]
+ * @param {string} [dayOfWeek]
  * @returns {object}
  */
-export function createDay(dayNumber) {
+export function createDay(dayNumber, date = "", dayOfWeek = "") {
   const stop = createStop("");
   stop.isOvernight = true; // first stop is overnight by default
   return {
     id: `day-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     dayNumber,
+    date,
+    dayOfWeek,
     title: `Day ${dayNumber} - Local Sightseeing`,
     description: "",
     stops: [stop],
@@ -58,6 +62,47 @@ export function createDay(dayNumber) {
     attractionDetails: [],
     meals: { breakfast: false, lunch: false, dinner: false },
   };
+}
+
+/**
+ * Computes or formats date and day of week for a specific day in the itinerary.
+ * @param {object} day
+ * @param {number} [dayIndex=0]
+ * @param {string} [travelDates=""]
+ * @returns {{ date: string, dayOfWeek: string, display: string }}
+ */
+export function getDayDateInfo(day, dayIndex = 0, travelDates = "") {
+  // 1. If day already has explicit date
+  if (day?.date) {
+    const parsed = new Date(day.date);
+    if (!isNaN(parsed.getTime())) {
+      const dayOfWeek = day.dayOfWeek || parsed.toLocaleDateString("en-US", { weekday: "long" });
+      const dateStr = parsed.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      return { date: dateStr, dayOfWeek, display: `${dateStr} • ${dayOfWeek}` };
+    }
+    return {
+      date: day.date,
+      dayOfWeek: day.dayOfWeek || "",
+      display: day.dayOfWeek ? `${day.date} • ${day.dayOfWeek}` : day.date,
+    };
+  }
+
+  // 2. Parse from travelDates string if available e.g. "15 Oct 2026 – 18 Oct 2026"
+  if (travelDates) {
+    const match = travelDates.match(/(\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/);
+    if (match) {
+      const baseDate = new Date(match[1]);
+      if (!isNaN(baseDate.getTime())) {
+        const targetDate = new Date(baseDate);
+        targetDate.setDate(baseDate.getDate() + dayIndex);
+        const dayOfWeek = targetDate.toLocaleDateString("en-US", { weekday: "long" });
+        const dateStr = targetDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        return { date: dateStr, dayOfWeek, display: `${dateStr} • ${dayOfWeek}` };
+      }
+    }
+  }
+
+  return { date: "", dayOfWeek: "", display: "" };
 }
 
 /**

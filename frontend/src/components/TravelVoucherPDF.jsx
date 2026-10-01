@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { formatIndianRupee, formatTransitHeadline } from "../utils/routeUtils";
+import { formatIndianRupee, formatTransitHeadline, getDayDateInfo } from "../utils/routeUtils";
 import { exportVoucherToPdf } from "../utils/pdfGenerator";
 import { Plane, Ticket, Luggage, Building, Train } from "lucide-react";
 
@@ -23,8 +23,14 @@ const ConfirmedStamp = () => (
 );
 
 // ── Main Component ────────────────────────────────────────────────────────
-export default function TravelVoucherPDF({ itineraryData }) {
+export default function TravelVoucherPDF({ itineraryData, agencySettings }) {
   const voucherRef = useRef(null);
+  const settings = agencySettings || {
+    name: "Lobo Travels",
+    logoUrl: "/lobo-logo.jpg",
+    voucherTerms:
+      "Please reconfirm all hotel, sightseeing and transfer arrangements before the start of the tour. Valid government-issued photo ID is mandatory at all hotel check-ins and monument entrances. Chauffeur duty hours: 08:00 AM to 08:00 PM for local transfers except early morning scheduled transfers.",
+  };
   const {
     confirmation,
     selectedHotel,
@@ -179,13 +185,16 @@ export default function TravelVoucherPDF({ itineraryData }) {
                     .join(" • ");
 
                   const routeSummary = transitDetails || day.title;
+                  const dateInfo = getDayDateInfo(day, idx, itineraryData.travelDates);
 
                   return (
                     <tr key={day.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}>
                       <td className="px-3 py-2 font-bold text-blue-900 whitespace-nowrap">
                         Day {day.dayNumber || idx + 1}
                       </td>
-                      <td className="px-3 py-2 text-slate-500 whitespace-nowrap">{day.date || "—"}</td>
+                      <td className="px-3 py-2 text-slate-700 font-medium whitespace-nowrap">
+                        {dateInfo.display || day.date || "—"}
+                      </td>
                       <td className="px-3 py-2 text-slate-700">{routeSummary}</td>
                       <td className="px-3 py-2 font-semibold text-slate-800">{overnight}</td>
                       <td className="px-3 py-2 font-semibold text-emerald-700">{mealStr}</td>
@@ -407,11 +416,21 @@ export default function TravelVoucherPDF({ itineraryData }) {
             </div>
           </div>
 
+          {/* Reconfirmation Statement */}
+          {settings?.voucherTerms && (
+            <div className="avoid-break mb-4 p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] text-slate-600 leading-relaxed">
+              <strong className="text-slate-800 uppercase tracking-wide block mb-0.5">
+                Travel Voucher Terms &amp; Reconfirmation Statement:
+              </strong>
+              <p>{settings.voucherTerms}</p>
+            </div>
+          )}
+
           {/* Signature Box */}
           <div className="avoid-break mb-6 flex justify-end">
             <div className="text-center border-t border-slate-400 pt-2.5 w-48">
               <p className="text-xs font-bold text-slate-800 uppercase tracking-wide">Authorized Signatory</p>
-              <p className="text-xs text-slate-500">For Lobo Travels</p>
+              <p className="text-xs text-slate-500">For {settings?.name || "Lobo Travels"}</p>
             </div>
           </div>
         </div>

@@ -248,6 +248,8 @@ export const INITIAL_ITINERARY_DATA = {
     {
       id: "day-1",
       dayNumber: 1,
+      date: "15 Oct 2026",
+      dayOfWeek: "Thursday",
       title: "Arrival at Bhuntar & Scenic Drive to Manali",
       description: "Warm welcome by Lobo Travels chauffeur upon arrival at Bhuntar Airport. Enjoy a picturesque mountain drive along the Beas River to Manali. Check into your resort, freshen up, and spend your relaxing evening visiting Hadimba Temple and shopping at the vibrant Mall Road.",
       stops: [
@@ -291,6 +293,8 @@ export const INITIAL_ITINERARY_DATA = {
     {
       id: "day-2",
       dayNumber: 2,
+      date: "16 Oct 2026",
+      dayOfWeek: "Friday",
       title: "Alpine Thrills at Solang Valley & Atal Tunnel",
       description: "Begin with a lavish buffet breakfast. Head towards Solang Valley, renowned for snow sports, paragliding, and cable car rides. Experience the marvel of modern engineering at the Atal Tunnel with panoramic snow-capped Himalayan peaks.",
       stops: [
@@ -337,6 +341,8 @@ export const INITIAL_ITINERARY_DATA = {
     {
       id: "day-3",
       dayNumber: 3,
+      date: "17 Oct 2026",
+      dayOfWeek: "Saturday",
       title: "Heritage Exploration: Naggar Castle & Art Gallery",
       description: "Explore the historic timber-and-stone Naggar Castle overlooking the Kullu valley. Visit the Nicholas Roerich Art Gallery and stop by local shawls weaving centers. Return for a cozy candlelight dinner at your hotel.",
       stops: [
@@ -383,6 +389,8 @@ export const INITIAL_ITINERARY_DATA = {
     {
       id: "day-4",
       dayNumber: 4,
+      date: "18 Oct 2026",
+      dayOfWeek: "Sunday",
       title: "Souvenirs & Departure Flight Return Transfer",
       description: "Relish your final mountain breakfast. Pack your bags with souvenirs and handwoven shawls. Your private chauffeur transfers you to Bhuntar Airport for your onward flight with fond memories of Lobo Travels.",
       stops: [
@@ -445,10 +453,12 @@ export function createBlankItinerary(seq = {}) {
     showCostOnItinerary: true,
     clientName: "",
     clientPhone: "",
-    pax: "2 Adults",
-    destinationTitle: "Custom Tour Itinerary",
-    tripDuration: "1 Day",
+    pax: "",
+    destinationTitle: "",
+    tripDuration: "",
     travelDates: "",
+    startDate: "",
+    endDate: "",
     arrivalInfo: "",
     departureInfo: "",
     currency: "INR (₹)",
@@ -485,8 +495,8 @@ export function createBlankItinerary(seq = {}) {
       name: "",
       city: "",
       category: "3-4 Star",
-      roomType: "Deluxe Room",
-      mealPlan: "MAP (Breakfast & Dinner Included)",
+      roomType: "Standard / Deluxe Room",
+      mealPlan: "CP (Bed & Breakfast)",
       nights: 1,
       checkIn: "",
       checkOut: "",
@@ -495,10 +505,10 @@ export function createBlankItinerary(seq = {}) {
       mapsUrl: "",
     },
     selectedVehicle: {
-      name: "Toyota Innova Crysta (AC)",
-      category: "Premium MPV",
-      capacity: "6 Passengers + 1 Chauffeur",
-      features: "Dual AC, Reclining seats, All toll & parking covered",
+      name: "AC Private Vehicle",
+      category: "Sedan / SUV",
+      capacity: "4-6 Passengers",
+      features: "AC, Dedicated Chauffeur",
       driverName: "",
       driverPhone: "",
       vehicleNo: "",
@@ -532,7 +542,7 @@ export function createBlankItinerary(seq = {}) {
         ],
         attractions: [],
         attractionDetails: [],
-        meals: { breakfast: false, lunch: false, dinner: true },
+        meals: { breakfast: false, lunch: false, dinner: false },
       },
     ],
     inclusions: [...DEFAULT_INCLUSIONS],

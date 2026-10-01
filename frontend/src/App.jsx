@@ -5,6 +5,9 @@ import LivePreview from "./components/LivePreview";
 import SavedItinerariesModal from "./components/SavedItinerariesModal";
 import ConfirmModal from "./components/ConfirmModal";
 import CoverPhotoModal from "./components/CoverPhotoModal";
+import SettingsModal, { DEFAULT_AGENCY_SETTINGS } from "./components/SettingsModal";
+import KPICardsBar from "./components/KPICardsBar";
+import RecentItinerariesTable from "./components/RecentItinerariesTable";
 import TravelVoucherPDF from "./components/TravelVoucherPDF";
 import ItineraryMap from "./components/ItineraryMap";
 import GuestItineraryView from "./pages/GuestItineraryView";
@@ -61,11 +64,43 @@ export default function App() {
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [showRouteMap, setShowRouteMap] = useState(true);
   const [activeView, setActiveView] = useState("split"); // 'split' | 'editor' | 'preview' | 'map'
   const [toast, setToast] = useState(null);
   const [backendStatus, setBackendStatus] = useState(null);
   const [stats, setStats] = useState({ cacheHits: 6, geminiCalls: 1, tokensSaved: "94%" });
+
+  // Agency Branding & Configuration (Persisted)
+  const [agencySettings, setAgencySettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lobo_agency_settings");
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return DEFAULT_AGENCY_SETTINGS;
+  });
+
+  const handleSaveAgencySettings = (newSettings) => {
+    setAgencySettings(newSettings);
+    try {
+      localStorage.setItem("lobo_agency_settings", JSON.stringify(newSettings));
+    } catch {
+      // ignore
+    }
+    showToast("success", "Agency settings & branding saved!");
+  };
+
+  const handleResetDemoData = () => {
+    setAgencySettings(DEFAULT_AGENCY_SETTINGS);
+    try {
+      localStorage.setItem("lobo_agency_settings", JSON.stringify(DEFAULT_AGENCY_SETTINGS));
+    } catch {
+      // ignore
+    }
+    showToast("info", "Reset settings to Lobo Travels defaults.");
+  };
 
   const previewRef = useRef(null);
 
@@ -75,6 +110,46 @@ export default function App() {
       setBackendStatus(status);
     });
   }, []);
+
+  // All Itineraries List for KPI Metrics & Dashboard
+  const [itinerariesList, setItinerariesList] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lobo_all_itineraries");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return [
+      {
+        refNumber: "LT-2026-1048",
+        destinationTitle: "Scenic Himachal Mountain Escape (Manali & Solang)",
+        clientName: "Mr. Rajesh Sharma & Family",
+        status: "Confirmed",
+        estimatedCost: "₹ 48,500 / Total Package",
+        days: INITIAL_ITINERARY_DATA.days,
+      },
+      {
+        refNumber: "LT-2026-1049",
+        destinationTitle: "Magical Kashmir Valley & Dal Lake Serenity",
+        clientName: "Dr. Ananya Sen & Spouse",
+        status: "Draft",
+        estimatedCost: "₹ 62,000 / Total Package",
+        days: INITIAL_ITINERARY_DATA.days.slice(0, 2),
+      },
+    ];
+  });
+
+  // Sync itinerariesList to LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("lobo_all_itineraries", JSON.stringify(itinerariesList));
+    } catch {
+      // ignore
+    }
+  }, [itinerariesList]);
 
   // Sync working itinerary state to LocalStorage for instant preview & guest access
   useEffect(() => {
@@ -94,7 +169,19 @@ export default function App() {
   };
 
   const handleFieldChange = (field, value) => {
-    setItineraryData((prev) => ({ ...prev, [field]: value }));
+    setItineraryData((prev) => {
+      const updated = { ...prev, [field]: value };
+      setItinerariesList((list) => {
+        const idx = list.findIndex((i) => i.refNumber === updated.refNumber);
+        if (idx >= 0) {
+          const copy = [...list];
+          copy[idx] = { ...copy[idx], ...updated };
+          return copy;
+        }
+        return [updated, ...list];
+      });
+      return updated;
+    });
   };
 
   // ── Day management ───────────────────────────────────────────────────────
@@ -159,11 +246,13 @@ export default function App() {
       const seq = await generateSequentialRef();
       const blank = createBlankItinerary(seq);
       setItineraryData(blank);
-      showToast("success", `New blank itinerary created! Ref: ${blank.refNumber}`);
+      setItinerariesList((prev) => [blank, ...prev.filter((d) => d.refNumber !== blank.refNumber)]);
+      showToast("success", `New blank itinerary ready! Ref: ${blank.refNumber}`);
     } catch {
       const blank = createBlankItinerary();
       setItineraryData(blank);
-      showToast("success", `New blank itinerary created! Ref: ${blank.refNumber}`);
+      setItinerariesList((prev) => [blank, ...prev.filter((d) => d.refNumber !== blank.refNumber)]);
+      showToast("success", `New blank itinerary ready! Ref: ${blank.refNumber}`);
     }
   };
 
@@ -177,6 +266,7 @@ export default function App() {
       generatedDate: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
     };
     setItineraryData(refreshed);
+    setItinerariesList((prev) => [refreshed, ...prev.filter((d) => d.refNumber !== refreshed.refNumber)]);
     showToast("info", "Reset itinerary to standard Himachal template.");
   };
 
@@ -185,11 +275,13 @@ export default function App() {
     setIsSaving(true);
     try {
       const res = await saveItineraryToFirebase(itineraryData);
-      setItineraryData((prev) => ({
-        ...prev,
-        refNumber: res.refNumber || prev.refNumber,
-        voucherRef: res.voucherRef || prev.voucherRef,
-      }));
+      const updated = {
+        ...itineraryData,
+        refNumber: res.refNumber || itineraryData.refNumber,
+        voucherRef: res.voucherRef || itineraryData.voucherRef,
+      };
+      setItineraryData(updated);
+      setItinerariesList((prev) => [updated, ...prev.filter((d) => d.refNumber !== updated.refNumber)]);
       showToast("success", `Saved! Ref: ${res.refNumber}`);
     } catch (err) {
       showToast("error", `Save failed: ${err.message}`);
@@ -231,18 +323,50 @@ export default function App() {
       },
     };
     setItineraryData(migrated);
+    setItinerariesList((prev) => [migrated, ...prev.filter((d) => d.refNumber !== migrated.refNumber)]);
     showToast("success", `Loaded ${savedDoc.refNumber} — ${savedDoc.destinationTitle || "Untitled"}`);
+  };
+
+  const handleDuplicateItinerary = async (item) => {
+    const seq = await generateSequentialRef();
+    const clonedRef = seq.itineraryRef || `LT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const clonedVoucher = seq.voucherRef || `LTV-${new Date().getFullYear()}-0001`;
+    const cloned = {
+      ...item,
+      refNumber: clonedRef,
+      voucherRef: clonedVoucher,
+      clientName: `${item.clientName || "Guest"} (Copy)`,
+      status: "Draft",
+      generatedDate: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+    };
+    setItinerariesList((prev) => [cloned, ...prev]);
+    setItineraryData(cloned);
+    showToast("success", `Duplicated itinerary as ${clonedRef}!`);
+  };
+
+  const handleDeleteItinerary = (refNumber) => {
+    setItinerariesList((prev) => prev.filter((d) => d.refNumber !== refNumber));
+    try {
+      localStorage.removeItem("lobo_itinerary_" + refNumber);
+    } catch {
+      // ignore
+    }
+    showToast("info", `Deleted record ${refNumber}.`);
   };
 
   // ── Mark as Confirmed ────────────────────────────────────────────────────
   const handleConfirmItinerary = (patch) => {
     const voucherRef = itineraryData.refNumber.replace("LT-", "LTV-");
-    setItineraryData((prev) => ({
-      ...prev,
+    const updated = {
+      ...itineraryData,
       ...patch,
       status: "Confirmed",
       voucherRef,
-    }));
+    };
+    setItineraryData(updated);
+    setItinerariesList((prev) =>
+      prev.map((item) => (item.refNumber === updated.refNumber ? updated : item))
+    );
     setIsConfirmModalOpen(false);
     showToast("success", `Booking confirmed! Voucher Ref: ${voucherRef}`);
   };
@@ -352,8 +476,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
       <Header
+        itineraries={itinerariesList}
+        onLoadItinerary={(item) => {
+          handleLoadItinerary(item);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
         onNewBlank={handleCreateNewBlankItinerary}
         onGenerate={handleGenerateItinerary}
         onExportPdf={handleExportPdf}
@@ -361,6 +490,7 @@ export default function App() {
         onReset={handleResetTemplate}
         onSave={handleSaveItinerary}
         onOpenSavedModal={() => setIsSavedModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         onMarkConfirmed={() => setIsConfirmModalOpen(true)}
         onOpenCoverModal={() => setIsCoverModalOpen(true)}
         isGenerating={isGenerating}
@@ -417,98 +547,142 @@ export default function App() {
         onSelectCoverPhoto={(cp) => handleFieldChange("coverPhoto", cp)}
       />
 
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        settings={agencySettings}
+        onSaveSettings={handleSaveAgencySettings}
+        onResetDemoData={handleResetDemoData}
+      />
+
+      {/* ── 5 Operations KPI Metric Cards + Reset, Save & Create Blank CTA ── */}
+      <KPICardsBar
+        itineraries={itinerariesList}
+        onCreateBlank={handleCreateNewBlankItinerary}
+        onReset={handleResetTemplate}
+        onSave={handleSaveItinerary}
+        isSaving={isSaving}
+        onFilterClick={() => setIsSavedModalOpen(true)}
+      />
+
       {/* Main Studio Body */}
-      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-20 sm:pb-6">
-        {/* Left Form Editor */}
-        <section
-          className={`lg:col-span-5 h-auto lg:h-[calc(100vh-130px)] lg:sticky lg:top-24 ${
-            activeView === "editor" || activeView === "split" ? "block" : "hidden lg:block"
-          }`}
-        >
-          <ItineraryForm
-            itineraryData={itineraryData}
-            onChangeField={handleFieldChange}
-            onAddDay={handleAddDay}
-            onAddDayBelow={handleAddDayBelow}
-            onUpdateDay={handleUpdateDay}
-            onDeleteDay={handleDeleteDay}
-            onMoveDayUp={handleMoveDayUp}
-            onMoveDayDown={handleMoveDayDown}
-            onGenerate={handleGenerateItinerary}
-            isGenerating={isGenerating}
-          />
-        </section>
-
-        {/* Right Live & Editable Preview with Map right on top */}
-        <section
-          className={`lg:col-span-7 ${
-            activeView === "preview" || activeView === "map" || activeView === "split"
-              ? "block"
-              : "hidden lg:block"
-          }`}
-        >
-          {/* Top Helper & Controls Bar */}
-          <div className="mb-3 flex items-center justify-between text-xs text-slate-500 px-2 flex-wrap gap-2">
-            <div className="flex items-center space-x-1.5 font-medium">
-              <Eye className="w-4 h-4 text-blue-600" />
-              <span>Live Interactive Preview</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                Tap text to edit inline
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              {/* Toggle Route Map */}
-              <button
-                type="button"
-                onClick={() => setShowRouteMap(!showRouteMap)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center space-x-1.5 transition-colors cursor-pointer ${
-                  showRouteMap
-                    ? "bg-blue-50 text-blue-700 border-blue-300 font-bold"
-                    : "bg-white text-slate-600 hover:bg-slate-50 border-slate-200"
-                }`}
-                title="Toggle interactive route map"
-              >
-                <Map className="w-3.5 h-3.5 text-blue-600" />
-                <span>{showRouteMap ? "Hide Map" : "Show Map"}</span>
-              </button>
-
-              {itineraryData.status === "Confirmed" && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
-                  <CheckCircle className="w-3 h-3 text-emerald-600" />
-                  <span>CONFIRMED</span>
-                </span>
-              )}
-              <span className="text-[11px] text-slate-400">
-                Ref: <strong className="text-slate-600">{itineraryData.refNumber}</strong>
-              </span>
-            </div>
-          </div>
-
-          {/* Interactive Leaflet Route Map directly above Live Preview */}
-          {(showRouteMap || activeView === "map") && (
-            <ItineraryMap
-              days={itineraryData.days}
-              destinationTitle={itineraryData.destinationTitle}
-              isCollapsible={true}
-            />
-          )}
-
-          {activeView !== "map" && (
-            <LivePreview
-              ref={previewRef}
+      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-20 sm:pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Form Editor */}
+          <section
+            className={`lg:col-span-5 h-auto lg:h-[calc(100vh-130px)] lg:sticky lg:top-24 ${
+              activeView === "editor" || activeView === "split" ? "block" : "hidden lg:block"
+            }`}
+          >
+            <ItineraryForm
               itineraryData={itineraryData}
-              mapImageBase64={mapImageBase64}
-              onUpdateField={handleFieldChange}
+              onChangeField={handleFieldChange}
+              onAddDay={handleAddDay}
+              onAddDayBelow={handleAddDayBelow}
+              onUpdateDay={handleUpdateDay}
+              onDeleteDay={handleDeleteDay}
+              onMoveDayUp={handleMoveDayUp}
+              onMoveDayDown={handleMoveDayDown}
+              onGenerate={handleGenerateItinerary}
+              isGenerating={isGenerating}
             />
-          )}
+          </section>
 
-          {/* Hidden Travel Voucher DOM Container for client-side html2pdf export */}
-          <div className="hidden">
-            <TravelVoucherPDF itineraryData={itineraryData} />
-          </div>
-        </section>
+          {/* Right Live & Editable Preview with Map right on top */}
+          <section
+            className={`lg:col-span-7 ${
+              activeView === "preview" || activeView === "map" || activeView === "split"
+                ? "block"
+                : "hidden lg:block"
+            }`}
+          >
+            {/* Top Helper & Controls Bar */}
+            <div className="mb-3 flex items-center justify-between text-xs text-slate-500 px-2 flex-wrap gap-2">
+              <div className="flex items-center space-x-1.5 font-medium">
+                <Eye className="w-4 h-4 text-blue-600" />
+                <span>Live Interactive Preview</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  Tap text to edit inline
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                {/* Toggle Route Map */}
+                <button
+                  type="button"
+                  onClick={() => setShowRouteMap(!showRouteMap)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                    showRouteMap
+                      ? "bg-blue-50 text-blue-700 border-blue-300 font-bold"
+                      : "bg-white text-slate-600 hover:bg-slate-50 border-slate-200"
+                  }`}
+                  title="Toggle interactive route map"
+                >
+                  <Map className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{showRouteMap ? "Hide Map" : "Show Map"}</span>
+                </button>
+
+                {itineraryData.status === "Confirmed" && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
+                    <CheckCircle className="w-3 h-3 text-emerald-600" />
+                    <span>CONFIRMED</span>
+                  </span>
+                )}
+                <span className="text-[11px] text-slate-400">
+                  Ref: <strong className="text-slate-600">{itineraryData.refNumber}</strong>
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive Leaflet Route Map directly above Live Preview */}
+            {(showRouteMap || activeView === "map") && (
+              <ItineraryMap
+                days={itineraryData.days}
+                destinationTitle={itineraryData.destinationTitle}
+                isCollapsible={true}
+              />
+            )}
+
+            {activeView !== "map" && (
+              <LivePreview
+                ref={previewRef}
+                itineraryData={itineraryData}
+                mapImageBase64={mapImageBase64}
+                onUpdateField={handleFieldChange}
+              />
+            )}
+
+            {/* Hidden Travel Voucher DOM Container for client-side html2pdf export */}
+            <div className="hidden">
+              <TravelVoucherPDF itineraryData={itineraryData} agencySettings={agencySettings} />
+            </div>
+          </section>
+        </div>
+
+        {/* ── Recent Tour Itineraries Table (Matches User Screenshot) ── */}
+        <RecentItinerariesTable
+          itineraries={itinerariesList}
+          onEdit={(item) => {
+            handleLoadItinerary(item);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onView={(item) => {
+            handleLoadItinerary(item);
+            setActiveView("preview");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onDuplicate={handleDuplicateItinerary}
+          onDelete={handleDeleteItinerary}
+          onExportPdf={(item) => {
+            handleLoadItinerary(item);
+            setTimeout(() => handleExportPdf(), 300);
+          }}
+          onExportVoucher={(item) => {
+            handleLoadItinerary(item);
+            setTimeout(() => handleExportVoucher(), 300);
+          }}
+        />
       </main>
 
       {/* Mobile Bottom Sticky Navigation Bar */}

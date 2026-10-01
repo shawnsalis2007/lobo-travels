@@ -1,8 +1,26 @@
-import React, { useState } from "react";
-import { Hotel, Car, Utensils, Moon, Users, ShieldAlert, ChevronDown, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  Hotel,
+  Car,
+  Utensils,
+  Moon,
+  Users,
+  ShieldAlert,
+  ChevronDown,
+  Sparkles,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Check,
+  Star,
+  Building,
+} from "lucide-react";
 import { PRELOADED_HOTELS, PRELOADED_VEHICLES, MEAL_PLANS } from "../data/defaultItinerary";
 import { VEHICLE_BRANDS, VEHICLE_MODELS_BY_BRAND } from "../utils/routeUtils";
-import { autofillHotel } from "../utils/api";
+import { autofillHotel, saveCustomHotelToDb, fetchCustomHotelsList } from "../utils/api";
+import GoogleHotelImportModal from "./GoogleHotelImportModal";
+import HotelManualModal from "./HotelManualModal";
 
 export default function HotelVehicleSelector({
   selectedHotel,
@@ -13,6 +31,111 @@ export default function HotelVehicleSelector({
   onToggleCostVisibility,
 }) {
   const [isAutofilling, setIsAutofilling] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [editingHotel, setEditingHotel] = useState(null);
+
+  // Unified Recommended Hotels Registry (Preloaded + Imported + Manually Added)
+  const [recommendedHotels, setRecommendedHotels] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lobo_recommended_hotels");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge with PRELOADED_HOTELS preventing duplicates by id/name
+          const existingIds = new Set(parsed.map((p) => p.id || p.name));
+          const additions = PRELOADED_HOTELS.filter((p) => !existingIds.has(p.id) && !existingIds.has(p.name));
+          return [...parsed, ...additions];
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return PRELOADED_HOTELS;
+  });
+
+  // Fetch backend custom hotels on startup
+  useEffect(() => {
+    fetchCustomHotelsList().then((customs) => {
+      if (Array.isArray(customs) && customs.length > 0) {
+        setRecommendedHotels((prev) => {
+          const idSet = new Set(prev.map((p) => p.name.toLowerCase()));
+          const newOnes = customs.filter((c) => !idSet.has(c.name.toLowerCase()));
+          if (newOnes.length > 0) {
+            const merged = [...prev, ...newOnes];
+            try {
+              localStorage.setItem("lobo_recommended_hotels", JSON.stringify(merged));
+            } catch {
+              // ignore
+            }
+            return merged;
+          }
+          return prev;
+        });
+      }
+    });
+  }, []);
+
+  // Save to LocalStorage whenever recommendedHotels updates
+  const saveRecommendedHotels = (newList) => {
+    setRecommendedHotels(newList);
+    try {
+      localStorage.setItem("lobo_recommended_hotels", JSON.stringify(newList));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleImportHotel = async (importedHotel) => {
+    // Add to recommended list
+    const filtered = recommendedHotels.filter(
+      (h) => h.name.toLowerCase() !== importedHotel.name.toLowerCase()
+    );
+    const updatedList = [importedHotel, ...filtered];
+    saveRecommendedHotels(updatedList);
+
+    // Save to backend / Firestore
+    saveCustomHotelToDb(importedHotel);
+
+    // Set as active hotel for the itinerary
+    onUpdateHotel({
+      name: importedHotel.name,
+      city: importedHotel.city || "",
+      category: importedHotel.category || "4 Star Luxury",
+      roomType: importedHotel.roomType || "Deluxe Valley / City View Room",
+      mealPlan: importedHotel.mealPlan || "MAP (Breakfast & Dinner Included)",
+      nights: selectedHotel.nights || 2,
+      address: importedHotel.address || "",
+      rating: importedHotel.rating || "4.8/5",
+      mapsUrl: importedHotel.mapsUrl || "",
+      photoUrl: importedHotel.photoUrl || "",
+    });
+  };
+
+  const handleSaveManualHotel = (savedHotel) => {
+    const filtered = recommendedHotels.filter(
+      (h) => (h.id && h.id !== savedHotel.id) || (h.name.toLowerCase() !== savedHotel.name.toLowerCase())
+    );
+    const updatedList = [savedHotel, ...filtered];
+    saveRecommendedHotels(updatedList);
+
+    // Save to backend
+    saveCustomHotelToDb(savedHotel);
+
+    // Set as active hotel for the itinerary
+    onUpdateHotel({
+      name: savedHotel.name,
+      city: savedHotel.city || "",
+      category: savedHotel.category || "4 Star",
+      roomType: savedHotel.roomType || "Deluxe Room",
+      mealPlan: savedHotel.mealPlan || "MAP (Breakfast & Dinner Included)",
+      nights: selectedHotel.nights || 2,
+      address: savedHotel.address || "",
+      rating: savedHotel.rating || "4.5/5",
+      mapsUrl: savedHotel.mapsUrl || "",
+      photoUrl: savedHotel.photoUrl || savedHotel.imageUrl || "",
+    });
+  };
 
   // Vehicle brand/model state
   const [vehicleBrand, setVehicleBrand] = useState(() => {
@@ -46,15 +169,19 @@ export default function HotelVehicleSelector({
   };
 
   const handleHotelSelect = (hotelId) => {
-    const found = PRELOADED_HOTELS.find((h) => h.id === hotelId);
+    const found = recommendedHotels.find((h) => (h.id === hotelId || h.name === hotelId));
     if (found) {
       onUpdateHotel({
         name: found.name,
-        category: found.category,
-        roomType: found.roomType,
-        mealPlan: found.mealPlan,
+        category: found.category || "4 Star Luxury",
+        roomType: found.roomType || "Deluxe Room",
+        mealPlan: found.mealPlan || "MAP (Breakfast & Dinner Included)",
         nights: found.defaultNights || selectedHotel.nights || 2,
         city: found.city || "",
+        address: found.address || "",
+        rating: found.rating || "",
+        mapsUrl: found.mapsUrl || "",
+        photoUrl: found.photoUrl || found.imageUrl || "",
       });
     }
   };
@@ -81,43 +208,121 @@ export default function HotelVehicleSelector({
 
   return (
     <div className="space-y-6">
+      {/* ── Google Hotel Import Modal ─────────────────────────────────────── */}
+      <GoogleHotelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportHotel={handleImportHotel}
+        onOpenManualEdit={(hotel) => {
+          setEditingHotel(hotel);
+          setIsManualModalOpen(true);
+        }}
+      />
+
+      {/* ── Manual Hotel Add / Edit Modal ─────────────────────────────────── */}
+      <HotelManualModal
+        isOpen={isManualModalOpen}
+        initialHotel={editingHotel}
+        onClose={() => {
+          setIsManualModalOpen(false);
+          setEditingHotel(null);
+        }}
+        onSaveHotel={handleSaveManualHotel}
+      />
+
       {/* ── Hotel Card ─────────────────────────────────────────────────── */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-        <div className="flex items-center space-x-2.5 mb-4 text-blue-900 border-b border-slate-100 pb-3">
-          <div className="p-2 bg-blue-50 text-blue-700 rounded-lg">
-            <Hotel className="w-5 h-5" />
+        {/* Header with Quick Import / Add Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 text-blue-900 border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="p-2 bg-blue-50 text-blue-700 rounded-lg">
+              <Hotel className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold tracking-tight">Hotel &amp; Accommodation</h3>
+              <p className="text-xs text-slate-500">Select recommended hotel or import from Google</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold tracking-tight">Hotel & Accommodation</h3>
-            <p className="text-xs text-slate-500">Select pre-loaded hotel or configure custom stay</p>
+
+          {/* Quick Action Buttons for Hotels */}
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            {/* Search & Import from Google */}
+            <button
+              type="button"
+              onClick={() => setIsImportModalOpen(true)}
+              className="px-2.5 py-1.5 bg-[#9080fc] hover:bg-[#7c5dfa] text-white text-xs font-bold rounded-lg shadow-2xs transition flex items-center space-x-1 cursor-pointer active:scale-95"
+              title="Search and import hotel profile from Google Places"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search Google</span>
+            </button>
+
+            {/* Manually Add Hotel */}
+            <button
+              type="button"
+              onClick={() => {
+                setEditingHotel(null);
+                setIsManualModalOpen(true);
+              }}
+              className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-2xs transition flex items-center space-x-1 cursor-pointer active:scale-95"
+              title="Manually add a new hotel with custom rates and photos"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Hotel</span>
+            </button>
+
+            {/* Edit Current Hotel Details */}
+            {selectedHotel?.name && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingHotel(selectedHotel);
+                  setIsManualModalOpen(true);
+                }}
+                className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg border border-slate-200 transition cursor-pointer"
+                title="Edit current hotel details"
+              >
+                <Edit className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
         <div className="space-y-3.5">
-          {/* Preloaded Dropdown */}
+          {/* Preloaded & Recommended Hotels Dropdown (Matches Screenshot media_1790871184883.png) */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Select Pre-Loaded Hotel
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700">
+                Select Pre-Loaded Hotel
+              </label>
+              <span className="text-[10px] text-slate-400">
+                {recommendedHotels.length} hotels in database
+              </span>
+            </div>
             <select
-              className="w-full text-xs rounded-lg border-slate-300 bg-slate-50/50 p-2.5 text-slate-800 focus:border-blue-500 focus:ring-blue-500"
+              className="w-full text-xs rounded-lg border border-slate-300 bg-slate-50/50 p-2.5 text-slate-800 focus:border-blue-500 focus:ring-blue-500 font-medium"
               onChange={(e) => handleHotelSelect(e.target.value)}
-              defaultValue=""
+              value={
+                recommendedHotels.find((h) => h.name === selectedHotel.name)?.id ||
+                recommendedHotels.find((h) => h.name === selectedHotel.name)?.name ||
+                ""
+              }
             >
               <option value="" disabled>-- Choose Recommended Hotel --</option>
-              {PRELOADED_HOTELS.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name} ({h.category}){h.city ? ` • ${h.city}` : ""}
+              {recommendedHotels.map((h) => (
+                <option key={h.id || h.name} value={h.id || h.name}>
+                  {h.name} ({h.category || "Hotel"}){h.city ? ` • ${h.city}` : ""}
+                  {h.isCustom ? " ⭐ [Custom/Imported]" : ""}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Editable Hotel Name */}
+          {/* Editable Hotel Name & Location (Matches Screenshot media_1790871216197.png) */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block text-xs font-medium text-slate-600">
-                Hotel Name & Location
+                Hotel Name &amp; Location
               </label>
               {selectedHotel.name && (
                 <button
@@ -141,7 +346,7 @@ export default function HotelVehicleSelector({
             />
           </div>
 
-          {/* City */}
+          {/* City / Location (Matches Screenshot media_1790871216197.png) */}
           <div>
             <label className="block text-xs font-medium text-slate-600 mb-1">City / Location</label>
             <input
