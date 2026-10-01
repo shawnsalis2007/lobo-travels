@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
+import { getCuratedFallback } from "./imageService.js";
 
 dotenv.config();
 
@@ -70,7 +71,7 @@ JSON format:
           imageUrl:
             item.imageUrl && item.imageUrl.startsWith("http")
               ? item.imageUrl
-              : `https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80`,
+              : getCuratedFallback(item.name || ""),
           source: "gemini-flash",
         }));
       }
@@ -82,12 +83,10 @@ JSON format:
   // Fallback generator when Gemini key is absent or network fails
   return attractions.map((name) => {
     const cleanName = name.trim();
-    const encoded = encodeURIComponent(cleanName);
     return {
       name: cleanName,
       wikiUrl: `https://en.wikipedia.org/wiki/${encodeURIComponent(cleanName.replace(/\s+/g, "_"))}`,
-      // Curated travel Unsplash imagery with attraction query
-      imageUrl: `https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80`,
+      imageUrl: getCuratedFallback(cleanName),
       source: "fallback-resolver",
     };
   });
