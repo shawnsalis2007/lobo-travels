@@ -422,3 +422,121 @@ export const INITIAL_ITINERARY_DATA = {
   inclusions: [...DEFAULT_INCLUSIONS],
   exclusions: [...DEFAULT_EXCLUSIONS],
 };
+
+/**
+ * Creates a clean, empty blank itinerary template.
+ */
+export function createBlankItinerary(seq = {}) {
+  const currentYear = new Date().getFullYear();
+  const refNumber =
+    seq.itineraryRef || `LT-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const voucherRef = seq.voucherRef || refNumber.replace("LT-", "LTV-");
+  const todayStr = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  return {
+    refNumber,
+    voucherRef,
+    generatedDate: todayStr,
+    status: "Draft",
+    showCostOnItinerary: true,
+    clientName: "",
+    clientPhone: "",
+    pax: "2 Adults",
+    destinationTitle: "Custom Tour Itinerary",
+    tripDuration: "1 Day",
+    travelDates: "",
+    arrivalInfo: "",
+    departureInfo: "",
+    currency: "INR (₹)",
+    estimatedCost: "",
+    notes: "",
+    confirmation: null,
+    coverPhoto: { mode: "auto", url: null },
+    managedFlightDetails: {
+      isFlightBookedByLobo: false,
+      arrivalFlight: {
+        airline: "",
+        flightNumber: "",
+        pnr: "",
+        departureAirport: "",
+        departureTime: "",
+        arrivalAirport: "",
+        arrivalTime: "",
+        terminal: "",
+        baggageAllowance: "",
+      },
+      departureFlight: {
+        airline: "",
+        flightNumber: "",
+        pnr: "",
+        departureAirport: "",
+        departureTime: "",
+        arrivalAirport: "",
+        arrivalTime: "",
+        terminal: "",
+        baggageAllowance: "",
+      },
+    },
+    selectedHotel: {
+      name: "",
+      city: "",
+      category: "3-4 Star",
+      roomType: "Deluxe Room",
+      mealPlan: "MAP (Breakfast & Dinner Included)",
+      nights: 1,
+      checkIn: "",
+      checkOut: "",
+      confirmationNo: "",
+      address: "",
+      mapsUrl: "",
+    },
+    selectedVehicle: {
+      name: "Toyota Innova Crysta (AC)",
+      category: "Premium MPV",
+      capacity: "6 Passengers + 1 Chauffeur",
+      features: "Dual AC, Reclining seats, All toll & parking covered",
+      driverName: "",
+      driverPhone: "",
+      vehicleNo: "",
+    },
+    days: [
+      {
+        id: `day-${Date.now()}-1`,
+        dayNumber: 1,
+        title: "Day 1 - Arrival & Sightseeing",
+        description: "",
+        stops: [
+          {
+            id: `stop-${Date.now()}-1`,
+            locationName: "",
+            isOvernight: true,
+            isCheckIn: true,
+            isCheckOut: false,
+            noSightseeing: false,
+            attractionInput: "",
+            attractions: [],
+            intercityTransit: {
+              type: "car",
+              carrierName: "",
+              transitNumber: "",
+              departureLocation: "",
+              arrivalLocation: "",
+              departureTime: "",
+              arrivalTime: "",
+            },
+          },
+        ],
+        attractions: [],
+        attractionDetails: [],
+        meals: { breakfast: false, lunch: false, dinner: true },
+      },
+    ],
+    inclusions: [...DEFAULT_INCLUSIONS],
+    exclusions: [...DEFAULT_EXCLUSIONS],
+  };
+}
+

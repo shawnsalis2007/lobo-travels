@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FolderOpen, X, Clock, User, MapPin, CheckCircle, RefreshCw } from "lucide-react";
+import { FolderOpen, X, Clock, User, MapPin, CheckCircle, RefreshCw, Plus } from "lucide-react";
 import { fetchSavedItineraries } from "../utils/api";
 
-export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary }) {
+export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary, onNewBlank }) {
   const [loading, setLoading] = useState(false);
   const [itineraries, setItineraries] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,8 +64,8 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="p-4 border-b border-slate-100 bg-white flex items-center space-x-3">
+        {/* Search Bar & New Button */}
+        <div className="p-4 border-b border-slate-100 bg-white flex items-center space-x-2.5">
           <input
             type="text"
             placeholder="Search by Ref #, Client Name, Destination..."
@@ -76,11 +76,25 @@ export default function SavedItinerariesModal({ isOpen, onClose, onLoadItinerary
           <button
             onClick={loadList}
             disabled={loading}
-            className="p-2.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 border border-slate-200 rounded-xl text-xs flex items-center space-x-1"
+            className="p-2.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 border border-slate-200 rounded-xl text-xs flex items-center space-x-1 shrink-0"
             title="Refresh list from Firestore"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
+          {onNewBlank && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onNewBlank();
+              }}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center space-x-1 shrink-0 shadow-xs transition-colors cursor-pointer"
+              title="Create a new blank itinerary"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ New Itinerary</span>
+            </button>
+          )}
         </div>
 
         {/* Itinerary List */}

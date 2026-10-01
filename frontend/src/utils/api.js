@@ -139,12 +139,15 @@ export async function fetchSavedItineraries() {
     if (!response.ok) {
       throw new Error("Failed to fetch saved itineraries.");
     }
-    return await response.json();
+    const data = await response.json();
+    return data.itineraries || [];
   } catch (err) {
     console.warn("Saved itineraries list fetch error:", err.message);
-    return { success: true, count: 0, itineraries: [] };
+    return [];
   }
 }
+
+export const getSavedItineraries = fetchSavedItineraries;
 
 /**
  * Retrieves a specific itinerary by reference number.

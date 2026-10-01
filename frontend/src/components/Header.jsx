@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
   FileDown,
@@ -10,9 +10,13 @@ import {
   CheckCircle,
   FileCheck,
   Image,
+  Plus,
+  ChevronDown,
+  FilePlus,
 } from "lucide-react";
 
 export default function Header({
+  onNewBlank,
   onGenerate,
   onExportPdf,
   onExportVoucher,
@@ -31,6 +35,18 @@ export default function Header({
   voucherRef,
 }) {
   const isConfirmed = itineraryStatus === "Confirmed";
+  const [showNewMenu, setShowNewMenu] = useState(false);
+  const newMenuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (newMenuRef.current && !newMenuRef.current.contains(event.target)) {
+        setShowNewMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
@@ -106,6 +122,54 @@ export default function Header({
 
           {/* Action Buttons Toolbar (Smooth touch scroll on mobile) */}
           <div className="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto no-scrollbar py-1 sm:py-0 w-full sm:w-auto shrink-0 touch-scroll">
+            {/* + New Itinerary Dropdown Menu */}
+            <div className="relative inline-block text-left shrink-0" ref={newMenuRef}>
+              <button
+                type="button"
+                onClick={() => setShowNewMenu(!showNewMenu)}
+                className="px-2.5 py-2 text-xs font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors flex items-center space-x-1 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+                title="Create a new itinerary or load sample template"
+              >
+                <Plus className="w-3.5 h-3.5 text-blue-600" />
+                <span>+ New</span>
+                <ChevronDown className="w-3 h-3 text-blue-500 ml-0.5" />
+              </button>
+
+              {showNewMenu && (
+                <div className="origin-top-left sm:origin-top-right absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-60 rounded-xl shadow-xl bg-white border border-slate-200 z-50 py-1.5 animate-scale-up">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewMenu(false);
+                      onNewBlank();
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                  >
+                    <FilePlus className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <div className="font-bold text-slate-800">Blank Itinerary</div>
+                      <div className="text-[10px] text-slate-400">Start from scratch with 1 clean day</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewMenu(false);
+                      onReset();
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 text-xs text-slate-700 hover:bg-amber-50 hover:text-amber-900 flex items-center space-x-2.5 transition-colors border-t border-slate-100 cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <div>
+                      <div className="font-bold text-slate-800">Sample Himachal Tour</div>
+                      <div className="text-[10px] text-slate-400">Pre-filled 4-day Manali template</div>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Cover Photo Button */}
             <button
               onClick={onOpenCoverModal}
