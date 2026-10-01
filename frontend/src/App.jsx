@@ -65,6 +65,18 @@ export default function App() {
     });
   }, []);
 
+  // Sync working itinerary state to LocalStorage for instant preview & guest access
+  useEffect(() => {
+    try {
+      localStorage.setItem("lobo_active_itinerary", JSON.stringify(itineraryData));
+      if (itineraryData.refNumber) {
+        localStorage.setItem("lobo_itinerary_" + itineraryData.refNumber, JSON.stringify(itineraryData));
+      }
+    } catch {
+      // ignore storage quota errors
+    }
+  }, [itineraryData]);
+
   const showToast = (type, message) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 4500);

@@ -25,7 +25,8 @@ import {
 import ItineraryMap from "../components/ItineraryMap";
 import LivePreview from "../components/LivePreview";
 import { exportItineraryToPdf } from "../utils/pdfGenerator";
-import { buildDriveLine, buildTransitLine } from "../utils/routeUtils";
+import { buildDriveLine, buildTransitLine, migrateLegacyDay } from "../utils/routeUtils";
+import { INITIAL_ITINERARY_DATA } from "../data/defaultItinerary";
 import { API_BASE_URL } from "../utils/api";
 
 export default function GuestItineraryView({ refNumber: propRef }) {
@@ -44,48 +45,87 @@ export default function GuestItineraryView({ refNumber: propRef }) {
 
   const previewRef = useRef(null);
 
+  const expandDays = (it) => {
+    const initExpanded = {};
+    (it?.days || []).forEach((d) => {
+      initExpanded[d.id || d.dayNumber] = true;
+    });
+    setExpandedDays(initExpanded);
+  };
+
   useEffect(() => {
     async function loadPublicItinerary() {
       setLoading(true);
       setError(null);
+
+      // 1. Try public API endpoint
       try {
         const res = await fetch(`${API_BASE_URL}/api/itineraries/public/${encodeURIComponent(activeRef)}`);
-        if (!res.ok) {
-          throw new Error(`Itinerary "${activeRef}" not found.`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.itinerary) {
+            setItinerary(data.itinerary);
+            expandDays(data.itinerary);
+            setLoading(false);
+            return;
+          }
         }
-        const data = await res.json();
-        setItinerary(data.itinerary);
-        // Expand all days by default
-        const initExpanded = {};
-        (data.itinerary?.days || []).forEach((d) => {
-          initExpanded[d.id || d.dayNumber] = true;
-        });
-        setExpandedDays(initExpanded);
       } catch (err) {
-        console.warn("Guest view load error, trying fallback list:", err);
-        // Try fallback list fetch
-        try {
-          const listRes = await fetch(`${API_BASE_URL}/api/itinerary/list`);
+        console.warn("Public API fetch error, trying secondary sources:", err.message);
+      }
+
+      // 2. Try list endpoint
+      try {
+        const listRes = await fetch(`${API_BASE_URL}/api/itinerary/list`);
+        if (listRes.ok) {
           const listData = await listRes.json();
           const found = (listData.itineraries || []).find(
             (it) => it.refNumber === activeRef || it.id === activeRef
           );
           if (found) {
             setItinerary(found);
-            const initExpanded = {};
-            (found.days || []).forEach((d) => {
-              initExpanded[d.id || d.dayNumber] = true;
-            });
-            setExpandedDays(initExpanded);
+            expandDays(found);
+            setLoading(false);
             return;
           }
-        } catch {
-          // ignore
         }
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      } catch {
+        // ignore
       }
+
+      // 3. Try LocalStorage draft stored on this device
+      try {
+        const cachedByRef = localStorage.getItem("lobo_itinerary_" + activeRef);
+        if (cachedByRef) {
+          const parsed = JSON.parse(cachedByRef);
+          setItinerary(parsed);
+          expandDays(parsed);
+          setLoading(false);
+          return;
+        }
+
+        const activeDraft = localStorage.getItem("lobo_active_itinerary");
+        if (activeDraft) {
+          const parsed = JSON.parse(activeDraft);
+          const combined = { ...parsed, refNumber: activeRef };
+          setItinerary(combined);
+          expandDays(combined);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // ignore
+      }
+
+      // 4. Default Interactive Template fallback (guarantees interactive map always loads)
+      const fallbackTemplate = {
+        ...INITIAL_ITINERARY_DATA,
+        days: INITIAL_ITINERARY_DATA.days.map(migrateLegacyDay),
+        refNumber: activeRef,
+      };
+      setItinerary(fallbackTemplate);
+      expandDays(fallbackTemplate);
+      setLoading(false);
     }
 
     if (activeRef) {
