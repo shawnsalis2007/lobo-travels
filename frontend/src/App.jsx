@@ -244,14 +244,46 @@ export default function App() {
     }
   }, [itineraryData]);
 
-  // Sync itinerariesList to LocalStorage
-  useEffect(() => {
+  // Agency settings & branding
+  const [agencySettings, setAgencySettings] = useState(() => {
     try {
-      localStorage.setItem("lobo_all_itineraries", JSON.stringify(itinerariesList));
+      const saved = localStorage.getItem("lobo_agency_settings");
+      if (saved) return JSON.parse(saved);
     } catch {
       // ignore
     }
-  }, [itinerariesList]);
+    return {
+      name: "Lobo Travels",
+      tagline: "Travel packages, fleet operations, and all travel related solutions.",
+      logoUrl: "https://github.com/VensonLobo/Logo-hoasting/blob/main/Untitled%20design%20(10).png?raw=true",
+      email: "info@lobotravels.com",
+      website: "lobotravels.com",
+      address: "Shop No. 12, NDMC Market Near CNG Pump, Mandir Marg, New Delhi - 110001",
+      phones: "9811240072, 9891240072, 9312640072",
+      itineraryPrefix: "LT-",
+      voucherPrefix: "LTV-",
+    };
+  });
+
+  const handleSaveAgencySettings = (newSettings) => {
+    setAgencySettings(newSettings);
+    try {
+      localStorage.setItem("lobo_agency_settings", JSON.stringify(newSettings));
+    } catch {
+      // ignore
+    }
+    showToast("success", "Agency branding & configuration saved!");
+  };
+
+  const handleResetDemoData = () => {
+    setItinerariesList(DEFAULT_SEED_ITINERARIES);
+    try {
+      localStorage.setItem("lobo_all_itineraries", JSON.stringify(DEFAULT_SEED_ITINERARIES));
+    } catch {
+      // ignore
+    }
+    showToast("info", "Demo database reset to default itineraries.");
+  };
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -679,13 +711,31 @@ export default function App() {
         )}
 
         {/* VIEW: HOTELS DIRECTORY */}
-        {currentTab === "hotels" && <HotelsDirectoryView />}
+        {currentTab === "hotels" && (
+          <HotelsDirectoryView
+            onSelectHotelForItinerary={(hotel) => {
+              handleFieldChange("selectedHotel", {
+                name: hotel.name,
+                roomCategory: hotel.roomType || hotel.category || "Deluxe Valley Room",
+                mealPlan: hotel.mealPlan || "MAP",
+              });
+              setCurrentTab("itinerary");
+              showToast("success", `Applied ${hotel.name} to tour itinerary!`);
+            }}
+          />
+        )}
 
         {/* VIEW: DESTINATIONS CATALOG */}
         {currentTab === "destinations" && <DestinationsView />}
 
         {/* VIEW: AGENCY SETTINGS */}
-        {currentTab === "settings" && <SettingsView />}
+        {currentTab === "settings" && (
+          <SettingsView
+            settings={agencySettings}
+            onSaveSettings={handleSaveAgencySettings}
+            onResetDemoData={handleResetDemoData}
+          />
+        )}
 
         {/* VIEW: ITINERARY STUDIO / BUILDER */}
         {currentTab === "itinerary" && (

@@ -24,14 +24,19 @@ import { formatIndianRupee } from "../utils/routeUtils";
 export default function DashboardView({
   itineraries = [],
   onNewItinerary,
+  onCreateItinerary,
+  onLoadTemplate,
   onEditItinerary,
   onViewItinerary,
   onDuplicateItinerary,
   onDeleteItinerary,
   onExportPdf,
   onOpenVoucher,
+  onExportVoucher,
   onSelectTab,
 }) {
+  const handleCreate = onCreateItinerary || onNewItinerary;
+  const handleVoucher = onExportVoucher || onOpenVoucher;
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -93,7 +98,7 @@ export default function DashboardView({
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={onNewItinerary}
+              onClick={handleCreate}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide shadow-md transition transform active:scale-95 cursor-pointer"
             >
               <CirclePlus className="w-4 h-4 text-slate-950" />
@@ -202,7 +207,7 @@ export default function DashboardView({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           <button
             type="button"
-            onClick={onNewItinerary}
+            onClick={handleCreate}
             className="flex flex-col items-center justify-center p-4 rounded-xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md transition text-center group cursor-pointer"
           >
             <div className="w-10 h-10 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center mb-2 transition">
@@ -475,7 +480,7 @@ export default function DashboardView({
                           {/* Travel Voucher */}
                           <button
                             type="button"
-                            onClick={() => onOpenVoucher(item)}
+                            onClick={() => handleVoucher(item)}
                             title={isItemConfirmed ? "View Travel Voucher" : "Generate Travel Voucher"}
                             className={`p-1.5 rounded-md transition cursor-pointer ${
                               isItemConfirmed
