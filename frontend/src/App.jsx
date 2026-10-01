@@ -568,9 +568,9 @@ export default function App() {
       {/* Main Studio Body */}
       <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-20 sm:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Form Editor */}
+          {/* Left Form Editor - Expanded, Spacious, Full Height */}
           <section
-            className={`lg:col-span-5 h-auto lg:h-[calc(100vh-130px)] lg:sticky lg:top-24 ${
+            className={`lg:col-span-6 xl:col-span-5 w-full h-auto ${
               activeView === "editor" || activeView === "split" ? "block" : "hidden lg:block"
             }`}
           >
@@ -590,7 +590,7 @@ export default function App() {
 
           {/* Right Live & Editable Preview with Map right on top */}
           <section
-            className={`lg:col-span-7 ${
+            className={`lg:col-span-6 xl:col-span-7 w-full ${
               activeView === "preview" || activeView === "map" || activeView === "split"
                 ? "block"
                 : "hidden lg:block"

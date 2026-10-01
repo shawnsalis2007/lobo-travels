@@ -134,9 +134,9 @@ export default function ItineraryForm({
   ];
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col h-full">
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 bg-slate-50/80 px-4 pt-3 space-x-1 overflow-x-auto text-xs font-semibold no-scrollbar">
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs flex flex-col w-full h-auto min-h-[600px]">
+      {/* Tabs Header - Sticky when scrolling */}
+      <div className="sticky top-16 z-20 flex border-b border-slate-200 bg-slate-50/95 backdrop-blur-md px-4 pt-3 space-x-1 overflow-x-auto text-xs font-semibold no-scrollbar rounded-t-2xl shadow-2xs">
         {tabs.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -144,7 +144,7 @@ export default function ItineraryForm({
             onClick={() => setActiveTab(id)}
             className={`pb-3 px-3 border-b-2 transition-all flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === id
-                ? "border-blue-600 text-blue-700 bg-white rounded-t-lg shadow-xs"
+                ? "border-blue-600 text-blue-700 bg-white rounded-t-lg shadow-xs font-bold"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -154,7 +154,7 @@ export default function ItineraryForm({
         ))}
       </div>
 
-      <div className="p-5 flex-1 overflow-y-auto space-y-6">
+      <div className="p-4 sm:p-6 flex-1 space-y-6">
         {/* ── TAB: GENERAL TRIP INFO & FLIGHT DETAILS ──────────────────── */}
         {activeTab === "general" && (
           <div className="space-y-4">
