@@ -14,6 +14,28 @@ export const API_BASE_URL =
     ? ""
     : "https://lobo-travels.onrender.com";
 
+// Curated high-res destination attraction photos for instant offline / Vercel resolution
+const CURATED_ATTRACTION_PHOTOS = {
+  "solang valley": "https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?auto=format&fit=crop&w=800&q=80",
+  "atal tunnel": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "rohtang pass": "https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&w=800&q=80",
+  "hadimba temple": "https://images.unsplash.com/photo-1605649487212-47bdab064df8?auto=format&fit=crop&w=800&q=80",
+  "mall road": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  "vashisht hot springs": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+  "jogini waterfalls": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
+  "naggar castle": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+  "taj mahal": "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80",
+  "agra fort": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
+  "hawa mahal": "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=800&q=80",
+  "amber fort": "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
+  "city palace": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
+  "dal lake": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+  "gulmarg": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  "red fort": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80",
+  "qutub minar": "https://images.unsplash.com/photo-1585136917192-3c81121d5a7d?auto=format&fit=crop&w=800&q=80",
+  "india gate": "https://images.unsplash.com/photo-1592635196078-9fdc757f27f4?auto=format&fit=crop&w=800&q=80",
+};
+
 /**
  * Enriches unique attractions with Wikipedia URLs and Pexels destination photos.
  */
@@ -25,6 +47,9 @@ export async function fetchAttractionDetails(attractionNames) {
   const endpoint = `${API_BASE_URL}/api/itinerary/attractions`;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -33,16 +58,15 @@ export async function fetchAttractionDetails(attractionNames) {
       body: JSON.stringify({
         attractions: attractionNames,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Server responded with status ${response.status}`);
+    if (response.ok) {
+      return await response.json();
     }
-
-    return await response.json();
   } catch (error) {
-    // If running with absolute remote URL fails, attempt relative proxy if in browser
+    // If running on localhost, attempt retry via local relative proxy
     if (API_BASE_URL && typeof window !== "undefined" && window.location.hostname === "localhost") {
       try {
         console.warn("Retrying attractions call via local proxy...");
@@ -53,12 +77,36 @@ export async function fetchAttractionDetails(attractionNames) {
         });
         if (fallbackRes.ok) return await fallbackRes.json();
       } catch {
-        // ignore fallback error and throw original
+        // ignore
       }
     }
-    console.error("API Call error:", error);
-    throw error;
+    console.warn("Backend attractions call unreachable, generating client-side fallback:", error.message);
   }
+
+  // Resilient client-side fallback dictionary builder
+  const lookup = {};
+  for (const name of attractionNames) {
+    const key = name.toLowerCase().trim();
+    const matchedPhoto =
+      CURATED_ATTRACTION_PHOTOS[key] ||
+      Object.entries(CURATED_ATTRACTION_PHOTOS).find(([k]) => key.includes(k) || k.includes(key))?.[1] ||
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
+
+    lookup[key] = {
+      name,
+      wikiUrl: `https://en.wikipedia.org/wiki/${encodeURIComponent(name.trim().replace(/\s+/g, "_"))}`,
+      imageUrl: matchedPhoto,
+      cached: false,
+      source: "client-catalog-fallback",
+    };
+  }
+
+  return {
+    success: true,
+    lookup,
+    count: Object.keys(lookup).length,
+    source: "client-fallback",
+  };
 }
 
 /**
