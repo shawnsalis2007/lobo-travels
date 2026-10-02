@@ -621,6 +621,65 @@ export default function GuestItineraryView({ refNumber: propRef }) {
               </div>
             </div>
           )}
+
+          {/* 5C. Payment Settlement Details Card */}
+          {((itinerary.confirmation && (itinerary.confirmation.totalCost > 0 || itinerary.confirmation.advancePaid > 0)) || itinerary.status === "Confirmed" || itinerary.advancePaid) && (
+            <div className="bg-white border border-emerald-300 rounded-2xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+                <h3 className="text-sm font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <span>Official Booking &amp; Payment Settlement</span>
+                </h3>
+                <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded border border-emerald-300">
+                  STATUS: CONFIRMED
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Total Package Cost</span>
+                  <p className="font-extrabold text-slate-900 text-base mt-0.5">
+                    {formatIndianRupee(itinerary.confirmation?.totalCost || itinerary.estimatedCost)}
+                  </p>
+                  <p className="text-[10px] text-slate-500">All Taxes &amp; Inclusions</p>
+                </div>
+
+                <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200">
+                  <span className="text-[10px] text-emerald-700 uppercase font-bold block">Advance Paid</span>
+                  <p className="font-extrabold text-emerald-800 text-base mt-0.5">
+                    {formatIndianRupee(itinerary.confirmation?.advancePaid || itinerary.advancePaid || 0)}
+                  </p>
+                  <p className="text-[10px] text-emerald-600">
+                    {itinerary.confirmation?.paymentMode || "Received"} {itinerary.confirmation?.advanceDate ? `• ${itinerary.confirmation.advanceDate}` : ""}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200">
+                  <span className="text-[10px] text-amber-800 uppercase font-bold block">Pending Balance</span>
+                  <p className="font-extrabold text-amber-900 text-base mt-0.5">
+                    {formatIndianRupee(
+                      itinerary.confirmation?.pendingAmount !== undefined
+                        ? itinerary.confirmation.pendingAmount
+                        : Math.max(
+                            0,
+                            (parseInt(String(itinerary.estimatedCost).replace(/[^\d]/g, ""), 10) || 0) -
+                              (itinerary.confirmation?.advancePaid || itinerary.advancePaid || 0)
+                          )
+                    )}
+                  </p>
+                  <p className="text-[10px] text-amber-700 font-medium">Payable upon arrival</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Payment Mode</span>
+                  <p className="font-bold text-slate-900 text-sm mt-0.5">
+                    {itinerary.confirmation?.paymentMode || "UPI / Bank Transfer"}
+                  </p>
+                  <p className="text-[10px] text-emerald-700 font-medium">Advance Verified</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Hidden preview container for client PDF export */}

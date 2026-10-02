@@ -28,6 +28,7 @@ import {
   formatTransitHeadline,
   getDayDateInfo,
   getDayAccommodation,
+  formatIndianRupee,
 } from "../utils/routeUtils";
 
 const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }, ref) => {
@@ -52,7 +53,11 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
     exclusions = [],
     coverPhoto,
     managedFlightDetails,
+    confirmation,
+    status,
   } = itineraryData;
+
+  const isConfirmed = status === "Confirmed" || !!confirmation;
 
   // Inline blur handlers
   const handleInlineBlur = (field, e) => {
@@ -199,9 +204,16 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                 {/* Package Price (Hidden when showCostOnItinerary is OFF) */}
                 {showCostOnItinerary !== false && (
                   <div className="bg-white/10 border border-white/20 rounded-lg px-3.5 py-2 text-right shrink-0 backdrop-blur-xs">
-                    <span className="text-[10px] uppercase tracking-wider text-blue-200 block">
-                      Package Estimate
-                    </span>
+                    <div className="flex items-center justify-end space-x-1 mb-0.5">
+                      {isConfirmed && (
+                        <span className="text-[9px] font-bold uppercase bg-emerald-400 text-emerald-950 px-1.5 py-0.2 rounded font-mono">
+                          CONFIRMED
+                        </span>
+                      )}
+                      <span className="text-[10px] uppercase tracking-wider text-blue-200 block">
+                        Package Price
+                      </span>
+                    </div>
                     <span
                       contentEditable
                       suppressContentEditableWarning
@@ -210,6 +222,11 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                     >
                       {estimatedCost}
                     </span>
+                    {confirmation?.advancePaid > 0 && (
+                      <div className="text-[10px] text-emerald-300 font-semibold mt-0.5">
+                        Adv: {formatIndianRupee(confirmation.advancePaid)} • Bal: {formatIndianRupee(confirmation.pendingAmount)}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -783,9 +800,11 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                     onBlur={(e) => handleVehicleFieldBlur("driverName", e)}
                     className="font-bold text-slate-900 block hover:bg-amber-100 rounded px-0.5 cursor-text"
                   >
-                    {selectedVehicle.driverName || "Dedicated Hill Chauffeur"}
+                    {confirmation?.driverName || selectedVehicle.driverName || "Dedicated Hill Chauffeur"}
                   </span>
-                  <span className="text-[10px] text-slate-500">{selectedVehicle.driverPhone || "+91 98112 40072"}</span>
+                  <span className="text-[10px] text-slate-500">
+                    {confirmation?.driverPhone || selectedVehicle.driverPhone || "+91 98112 40072"}
+                  </span>
                 </div>
 
                 <div className="bg-white p-2.5 rounded-lg border border-slate-200">
@@ -796,7 +815,7 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                     onBlur={(e) => handleVehicleFieldBlur("vehicleNo", e)}
                     className="font-mono font-bold text-blue-900 block hover:bg-amber-100 rounded px-0.5 cursor-text"
                   >
-                    {selectedVehicle.vehicleNo || "HP 01 CA 5566"}
+                    {confirmation?.vehicleNo || selectedVehicle.vehicleNo || "HP 01 CA 5566"}
                   </span>
                   <span className="text-[10px] text-slate-500">Commercial Tourist Permit</span>
                 </div>
@@ -829,7 +848,112 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
           </div>
 
           {/* ========================================================
-              6. INCLUSIONS & EXCLUSIONS SECTION
+              6. PAYMENT DETAILS & BOOKING SETTLEMENT (SHOWN WHEN CONFIRMED)
+          ======================================================== */}
+          {((confirmation && (confirmation.totalCost > 0 || confirmation.advancePaid > 0)) || isConfirmed || itineraryData.advancePaid) && (
+            <div className="avoid-break mb-6 border border-emerald-300 rounded-xl overflow-hidden shadow-xs bg-emerald-50/20">
+              <div className="bg-gradient-to-r from-emerald-800 to-teal-900 text-white px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-300" />
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    Booking Confirmation &amp; Payment Settlement Details
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[10px] font-mono font-bold bg-emerald-600/90 text-white px-2 py-0.5 rounded border border-emerald-400">
+                    STATUS: CONFIRMED
+                  </span>
+                  {itineraryData.voucherRef && (
+                    <span className="text-[10px] font-mono bg-white/10 text-emerald-100 px-2 py-0.5 rounded border border-white/20">
+                      Voucher: {itineraryData.voucherRef}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  {/* Total Cost */}
+                  <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      Total Package Cost
+                    </span>
+                    <p className="text-base font-extrabold text-slate-900 mt-0.5">
+                      {formatIndianRupee(confirmation?.totalCost || estimatedCost)}
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-medium">All Hotels &amp; Transport Included</span>
+                  </div>
+
+                  {/* Advance Paid */}
+                  <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs">
+                    <span className="text-[10px] text-emerald-700 uppercase font-bold block">
+                      Advance Paid
+                    </span>
+                    <p className="text-base font-extrabold text-emerald-700 mt-0.5">
+                      {formatIndianRupee(confirmation?.advancePaid || itineraryData.advancePaid || 0)}
+                    </p>
+                    <span className="text-[10px] text-emerald-600 font-medium">
+                      {confirmation?.paymentMode || "Received"} {confirmation?.advanceDate ? `• ${confirmation.advanceDate}` : ""}
+                    </span>
+                  </div>
+
+                  {/* Pending Balance */}
+                  <div className="bg-white p-3 rounded-xl border border-amber-300 bg-amber-50/30 shadow-2xs">
+                    <span className="text-[10px] text-amber-800 uppercase font-bold block">
+                      Pending Balance
+                    </span>
+                    <p className="text-base font-extrabold text-amber-900 mt-0.5">
+                      {formatIndianRupee(
+                        confirmation?.pendingAmount !== undefined
+                          ? confirmation.pendingAmount
+                          : Math.max(
+                              0,
+                              (parseInt(String(estimatedCost).replace(/[^\d]/g, ""), 10) || 0) -
+                                (confirmation?.advancePaid || itineraryData.advancePaid || 0)
+                            )
+                      )}
+                    </p>
+                    <span className="text-[10px] text-amber-700 font-medium">Payable upon arrival</span>
+                  </div>
+
+                  {/* Payment Mode */}
+                  <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      Payment Mode
+                    </span>
+                    <p className="text-sm font-bold text-slate-800 mt-1">
+                      {confirmation?.paymentMode || "UPI / Bank Transfer"}
+                    </p>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Advance Verified</span>
+                  </div>
+                </div>
+
+                {/* Assigned Chauffeur & Vehicle Confirmation Bar */}
+                {(confirmation?.driverName || confirmation?.vehicleNo) && (
+                  <div className="pt-2.5 border-t border-emerald-200/70 flex items-center justify-between text-[11px] text-slate-700 flex-wrap gap-2">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-bold text-emerald-900">Assigned Chauffeur:</span>
+                      <span className="font-semibold text-slate-800">{confirmation.driverName}</span>
+                      {confirmation.driverPhone && (
+                        <span className="text-slate-500">({confirmation.driverPhone})</span>
+                      )}
+                    </div>
+                    {confirmation.vehicleNo && (
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-bold text-emerald-900">Assigned Vehicle No:</span>
+                        <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-300 text-blue-900">
+                          {confirmation.vehicleNo}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              7. INCLUSIONS & EXCLUSIONS SECTION
           ======================================================== */}
           <div className="terms-box avoid-break mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
