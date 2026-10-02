@@ -302,3 +302,67 @@ export function formatIndianRupee(amount) {
   if (isNaN(num)) return "—";
   return "₹" + num.toLocaleString("en-IN");
 }
+
+/**
+ * Resolves the accommodation / hotel object for a specific day.
+ * Checks day.hotel, day.accommodation, or falls back to itineraryData.selectedHotel
+ * or matches city from overnight stop.
+ *
+ * @param {object} day
+ * @param {object} itineraryData
+ * @returns {{ name: string, city: string, roomType: string, mealPlan: string, rating: string, address: string, photoUrl: string, isCustom: boolean }}
+ */
+export function getDayAccommodation(day, itineraryData = {}) {
+  const globalHotel = itineraryData?.selectedHotel || {
+    name: "Snow Valley Resorts, Manali",
+    city: "Manali",
+    roomType: "Deluxe Mountain View Room",
+    mealPlan: "MAP (Breakfast & Dinner Included)",
+    rating: "4.5/5",
+    address: "",
+  };
+
+  if (!day) return globalHotel;
+
+  // 1. Explicit hotel object on the day
+  if (day.hotel && typeof day.hotel === "object" && day.hotel.name) {
+    return {
+      name: day.hotel.name,
+      city: day.hotel.city || day.hotel.name.split(",")[1]?.trim() || globalHotel.city || "",
+      roomType: day.hotel.roomType || globalHotel.roomType || "Deluxe Mountain View Room",
+      mealPlan: day.hotel.mealPlan || globalHotel.mealPlan || "MAP (Breakfast & Dinner Included)",
+      rating: day.hotel.rating || globalHotel.rating || "4.5/5",
+      address: day.hotel.address || globalHotel.address || "",
+      photoUrl: day.hotel.photoUrl || globalHotel.photoUrl || "",
+      isCustom: !!day.hotel.isCustom,
+    };
+  }
+
+  // 2. Explicit accommodation string on the day
+  if (typeof day.accommodation === "string" && day.accommodation.trim()) {
+    return {
+      name: day.accommodation.trim(),
+      city: globalHotel.city || "",
+      roomType: globalHotel.roomType || "Deluxe Mountain View Room",
+      mealPlan: globalHotel.mealPlan || "MAP (Breakfast & Dinner Included)",
+      rating: globalHotel.rating || "4.5/5",
+      address: globalHotel.address || "",
+      photoUrl: globalHotel.photoUrl || "",
+    };
+  }
+
+  // 3. Fallback to overnight stop location / tour hotel
+  const overnightLoc = getOvernightLocation(day);
+  const city = overnightLoc || globalHotel.city || "";
+
+  return {
+    name: globalHotel.name,
+    city: city || globalHotel.city,
+    roomType: globalHotel.roomType || "Deluxe Mountain View Room",
+    mealPlan: globalHotel.mealPlan || "MAP (Breakfast & Dinner Included)",
+    rating: globalHotel.rating || "4.5/5",
+    address: globalHotel.address || "",
+    photoUrl: globalHotel.photoUrl || "",
+  };
+}
+

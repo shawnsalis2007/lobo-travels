@@ -538,6 +538,78 @@ export default function DayCardEditor({
           </div>
         </div>
 
+        {/* Day Accommodation / Night Stay Hotel */}
+        <div className="bg-slate-50/90 border border-slate-200/90 rounded-xl p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+              <Hotel className="w-3.5 h-3.5 text-blue-600" />
+              <span>Day Accommodation / Night Stay Hotel</span>
+            </label>
+            <span className="text-[10px] text-slate-400">
+              Shows on Day {day.dayNumber || index + 1} &amp; aggregated in bottom summary
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+            {/* Hotel Name */}
+            <div className="sm:col-span-6">
+              <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
+                Hotel / Property Name
+              </label>
+              <input
+                type="text"
+                value={day.hotel?.name || ""}
+                onChange={(e) =>
+                  onUpdate({
+                    ...day,
+                    hotel: { ...(day.hotel || {}), name: e.target.value },
+                  })
+                }
+                placeholder="e.g. Snow Valley Resorts, Manali (or default)"
+                className="w-full text-xs rounded-lg border-slate-300 p-2 text-slate-800 focus:border-blue-500 bg-white"
+              />
+            </div>
+
+            {/* Room Category */}
+            <div className="sm:col-span-3">
+              <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
+                Room Category
+              </label>
+              <input
+                type="text"
+                value={day.hotel?.roomType || ""}
+                onChange={(e) =>
+                  onUpdate({
+                    ...day,
+                    hotel: { ...(day.hotel || {}), roomType: e.target.value },
+                  })
+                }
+                placeholder="e.g. Deluxe Room"
+                className="w-full text-xs rounded-lg border-slate-300 p-2 text-slate-800 focus:border-blue-500 bg-white"
+              />
+            </div>
+
+            {/* Meal Plan */}
+            <div className="sm:col-span-3">
+              <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
+                Meal Plan
+              </label>
+              <input
+                type="text"
+                value={day.hotel?.mealPlan || ""}
+                onChange={(e) =>
+                  onUpdate({
+                    ...day,
+                    hotel: { ...(day.hotel || {}), mealPlan: e.target.value },
+                  })
+                }
+                placeholder="e.g. MAP (Breakfast & Dinner)"
+                className="w-full text-xs rounded-lg border-slate-300 p-2 text-slate-800 focus:border-blue-500 bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Multi-Stop Section */}
         <div>
           <div className="flex items-center justify-between mb-2">

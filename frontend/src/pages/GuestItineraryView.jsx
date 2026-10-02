@@ -24,8 +24,13 @@ import {
 } from "lucide-react";
 import ItineraryMap from "../components/ItineraryMap";
 import LivePreview from "../components/LivePreview";
-import { exportItineraryToPdf } from "../utils/pdfGenerator";
-import { buildDriveLine, buildTransitLine, migrateLegacyDay } from "../utils/routeUtils";
+import {
+  buildDriveLine,
+  buildTransitLine,
+  migrateLegacyDay,
+  getDayAccommodation,
+  getDayDateInfo,
+} from "../utils/routeUtils";
 import { INITIAL_ITINERARY_DATA } from "../data/defaultItinerary";
 import { API_BASE_URL } from "../utils/api";
 
@@ -440,6 +445,43 @@ export default function GuestItineraryView({ refNumber: propRef }) {
                           </div>
                         </div>
                       )}
+                      {/* Day-Specific Accommodation Badge */}
+                      {(() => {
+                        const dayAcc = getDayAccommodation(day, itinerary);
+                        const isLastDay = idx === (itinerary.days || []).length - 1;
+                        const isCheckOutOnly = day.stops?.some((s) => s.isCheckOut && !s.isOvernight) || isLastDay;
+
+                        return (
+                          <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-blue-50/40 rounded-xl p-3 border border-blue-100/80 text-xs">
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+                                <Hotel className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2 flex-wrap">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900 bg-blue-100 px-1.5 py-0.2 rounded border border-blue-200">
+                                    {isCheckOutOnly ? "Day Accommodation / Departure" : `Day ${day.dayNumber || idx + 1} Night Stay`}
+                                  </span>
+                                  <span className="font-bold text-slate-900">{dayAcc.name}</span>
+                                  {dayAcc.city && (
+                                    <span className="text-[11px] text-slate-500 font-medium">• {dayAcc.city}</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2 text-[11px] text-slate-600 mt-0.5 flex-wrap">
+                                  <span>Room: <strong className="text-slate-800 font-semibold">{dayAcc.roomType}</strong></span>
+                                  <span className="text-slate-300">•</span>
+                                  <span>Plan: <strong className="text-emerald-700 font-semibold">{dayAcc.mealPlan}</strong></span>
+                                </div>
+                              </div>
+                            </div>
+                            {dayAcc.rating && (
+                              <span className="text-[10px] font-bold bg-amber-50 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200 shrink-0 self-start sm:self-center">
+                                ★ {dayAcc.rating}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
@@ -448,49 +490,138 @@ export default function GuestItineraryView({ refNumber: propRef }) {
           </div>
         </div>
 
-        {/* ── 5. Hotel & Accommodation Details ─────────────────────────── */}
-        {itinerary.selectedHotel && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-            <h3 className="text-sm font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
-              <Hotel className="w-4 h-4 text-blue-600" />
-              <span>Confirmed Hotel & Meal Plan</span>
-            </h3>
+        {/* ── 5. Comprehensive Accommodations Summary (All Days) & Chauffeur Fleet ─────────────────────────── */}
+        <div className="space-y-6">
+          {/* 5A. All Days Accommodation Table */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+              <h3 className="text-sm font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
+                <Hotel className="w-4 h-4 text-blue-600" />
+                <span>Tour Accommodations Summary (All Days)</span>
+              </h3>
+              <span className="text-xs text-slate-500 font-semibold">
+                {(itinerary.days || []).length} Days Schedule • {itinerary.selectedHotel?.nights || (itinerary.days || []).length - 1} Nights Stay
+              </span>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                  Property Name
-                </span>
-                <p className="font-bold text-slate-800 text-sm">{itinerary.selectedHotel.name}</p>
-                <p className="text-slate-500 mt-0.5">{itinerary.selectedHotel.roomType}</p>
-                {itinerary.selectedHotel.address && (
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    📍 {itinerary.selectedHotel.address}
-                  </p>
-                )}
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-3">Day / Date</th>
+                    <th className="py-2.5 px-3">Destination</th>
+                    <th className="py-2.5 px-3">Hotel / Property</th>
+                    <th className="py-2.5 px-3">Room Category</th>
+                    <th className="py-2.5 px-3">Meal Plan</th>
+                    <th className="py-2.5 px-3 text-right">Stay Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-800">
+                  {(itinerary.days || []).map((day, dIdx) => {
+                    const acc = getDayAccommodation(day, itinerary);
+                    const dateInfo = getDayDateInfo(day, dIdx, itinerary.travelDates);
+                    const isLastDay = dIdx === (itinerary.days || []).length - 1;
+                    const isCheckOutOnly = day.stops?.some((s) => s.isCheckOut && !s.isOvernight) || isLastDay;
 
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                    Meal Plan
-                  </span>
-                  <p className="font-semibold text-emerald-700">{itinerary.selectedHotel.mealPlan}</p>
-                </div>
-                {itinerary.selectedHotel.confirmationNo && (
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                      Confirmation No.
-                    </span>
-                    <p className="font-mono font-bold text-slate-800">
-                      {itinerary.selectedHotel.confirmationNo}
-                    </p>
-                  </div>
-                )}
-              </div>
+                    return (
+                      <tr key={day.id || dIdx} className="hover:bg-slate-50/60 transition">
+                        <td className="py-2.5 px-3 font-semibold whitespace-nowrap">
+                          <span className="font-extrabold text-blue-950">Day {day.dayNumber || dIdx + 1}</span>
+                          {dateInfo.date && (
+                            <span className="block text-[10px] text-slate-400 font-normal">{dateInfo.date}</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 font-semibold text-slate-900 whitespace-nowrap">
+                          {acc.city || day.stops?.[0]?.locationName || "Manali"}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="font-bold text-slate-900 flex items-center space-x-1">
+                            <span>{acc.name}</span>
+                            {acc.rating && <span className="text-[10px] text-amber-600 font-bold ml-1">★{acc.rating}</span>}
+                          </div>
+                          {acc.address && <div className="text-[10px] text-slate-400 truncate max-w-[200px]">{acc.address}</div>}
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-700 whitespace-nowrap">
+                          {acc.roomType || "Deluxe Mountain View Room"}
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            {acc.mealPlan || "MAP (Breakfast & Dinner)"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                          {isCheckOutOnly ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                              Check-out &amp; Departure
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-200">
+                              Overnight Stay (Night {dIdx + 1})
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
+
+          {/* 5B. Dedicated Chauffeur Fleet Card */}
+          {itinerary.selectedVehicle && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+                <h3 className="text-sm font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
+                  <Car className="w-4 h-4 text-indigo-600" />
+                  <span>Dedicated Private Chauffeur &amp; Fleet Details</span>
+                </h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded border border-indigo-200">
+                  100% Dedicated Vehicle
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Assigned Vehicle</span>
+                  <p className="font-bold text-slate-900 text-sm mt-0.5">{itinerary.selectedVehicle.name}</p>
+                  <p className="text-[11px] text-slate-500">{itinerary.selectedVehicle.category || "Premium MPV / SUV"}</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Chauffeur / Driver</span>
+                  <p className="font-bold text-slate-900 text-sm mt-0.5">
+                    {itinerary.confirmation?.driverName || itinerary.selectedVehicle.driverName || "Dedicated Hill Chauffeur"}
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    {itinerary.confirmation?.driverPhone || itinerary.selectedVehicle.driverPhone || "+91 98112 40072"}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Vehicle Number</span>
+                  <p className="font-mono font-bold text-blue-900 text-sm mt-0.5">
+                    {itinerary.confirmation?.vehicleNo || itinerary.selectedVehicle.vehicleNo || "HP 01 CA 5566"}
+                  </p>
+                  <p className="text-[10px] text-slate-500">Commercial Tourist Permit</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Seating &amp; Capacity</span>
+                  <p className="font-semibold text-slate-800 text-sm mt-0.5">{itinerary.selectedVehicle.capacity || "6 Pax + 1 Driver"}</p>
+                  <p className="text-[10px] text-emerald-700 font-medium">Luggage Boot Space</p>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600 flex-wrap gap-2">
+                <span className="text-emerald-700 font-medium">
+                  ✓ Fuel, All State Toll Taxes, Green Tax, Parking &amp; Driver Night Allowances Included
+                </span>
+                <span className="text-slate-400">Duty Hours: 08:00 AM – 08:00 PM</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Hidden preview container for client PDF export */}
         <div className="hidden">

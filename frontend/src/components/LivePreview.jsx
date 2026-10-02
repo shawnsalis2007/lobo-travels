@@ -22,7 +22,13 @@ import {
   Luggage,
 } from "lucide-react";
 import AttractionCard from "./AttractionCard";
-import { buildDriveLine, buildTransitLine, formatTransitHeadline, getDayDateInfo } from "../utils/routeUtils";
+import {
+  buildDriveLine,
+  buildTransitLine,
+  formatTransitHeadline,
+  getDayDateInfo,
+  getDayAccommodation,
+} from "../utils/routeUtils";
 
 const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }, ref) => {
   const {
@@ -543,6 +549,91 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                         </div>
                       </div>
                     )}
+                    {/* Day-Specific Accommodation / Night Stay */}
+                    {(() => {
+                      const dayAcc = getDayAccommodation(day, itineraryData);
+                      const isLastDay = idx === days.length - 1;
+                      const isCheckOutOnly = day.stops?.some((s) => s.isCheckOut && !s.isOvernight) || isLastDay;
+
+                      return (
+                        <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80 text-xs">
+                          <div className="flex items-start sm:items-center space-x-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                              <Hotel className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-1.5 flex-wrap">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-900 bg-blue-100/70 px-1.5 py-0.2 rounded border border-blue-200">
+                                  {isCheckOutOnly ? "Day Accommodation / Departure" : `Day ${day.dayNumber || idx + 1} Night Stay`}
+                                </span>
+                                <span
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => {
+                                    const val = e.currentTarget.innerText;
+                                    const updatedDays = days.map((d, i) =>
+                                      i === idx ? { ...d, hotel: { ...(d.hotel || {}), name: val } } : d
+                                    );
+                                    onUpdateField("days", updatedDays);
+                                  }}
+                                  className="font-bold text-slate-900 hover:bg-amber-100 rounded px-1 cursor-text"
+                                >
+                                  {dayAcc.name}
+                                </span>
+                                {dayAcc.city && (
+                                  <span className="text-[11px] text-slate-500 font-medium">
+                                    • {dayAcc.city}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2.5 text-[11px] text-slate-600 mt-0.5 flex-wrap">
+                                <span>
+                                  Room:{" "}
+                                  <strong
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => {
+                                      const val = e.currentTarget.innerText;
+                                      const updatedDays = days.map((d, i) =>
+                                        i === idx ? { ...d, hotel: { ...(d.hotel || {}), roomType: val } } : d
+                                      );
+                                      onUpdateField("days", updatedDays);
+                                    }}
+                                    className="text-slate-800 hover:bg-amber-100 rounded px-0.5 cursor-text font-semibold"
+                                  >
+                                    {dayAcc.roomType || "Deluxe Mountain View Room"}
+                                  </strong>
+                                </span>
+                                <span className="text-slate-300">•</span>
+                                <span>
+                                  Meal Plan:{" "}
+                                  <strong
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => {
+                                      const val = e.currentTarget.innerText;
+                                      const updatedDays = days.map((d, i) =>
+                                        i === idx ? { ...d, hotel: { ...(d.hotel || {}), mealPlan: val } } : d
+                                      );
+                                      onUpdateField("days", updatedDays);
+                                    }}
+                                    className="text-emerald-700 hover:bg-amber-100 rounded px-0.5 cursor-text font-semibold"
+                                  >
+                                    {dayAcc.mealPlan || "MAP (Breakfast & Dinner)"}
+                                  </strong>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {dayAcc.rating && (
+                            <span className="text-[10px] font-bold bg-amber-50 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200 shrink-0 self-start sm:self-center">
+                              ★ {dayAcc.rating}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })}
@@ -550,140 +641,189 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
           </div>
 
           {/* ========================================================
-              5. HOTEL & VEHICLE DETAILS SECTION
+              5. COMPREHENSIVE ACCOMMODATION SUMMARY (ALL DAYS) & CHAUFFEUR FLEET
           ======================================================== */}
           <div className="hotel-vehicle-card avoid-break mb-6">
-            <div className="border-b border-slate-200 pb-2 mb-3">
+            <div className="border-b border-slate-200 pb-2 mb-3 flex items-center justify-between flex-wrap gap-2">
               <h3 className="text-sm font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-                <span>Accommodation & Chauffeur Fleet</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                <span>Tour Accommodations (All Days) &amp; Dedicated Chauffeur Fleet</span>
               </h3>
+              <span className="text-[11px] text-slate-500 font-semibold">
+                {days.length} Days Schedule • {selectedHotel.nights || days.length - 1} Nights Stay
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Hotel Details */}
-              <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
-                <div className="flex items-center space-x-2 text-blue-900 font-bold text-xs uppercase mb-3">
+            {/* 5A. DAY-BY-DAY ACCOMMODATION SUMMARY TABLE */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden mb-4 shadow-xs bg-white">
+              <div className="bg-slate-50 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-xs font-bold text-blue-950 uppercase">
                   <Hotel className="w-4 h-4 text-blue-700" />
-                  <span>Hotel Details</span>
+                  <span>Confirmed Day-by-Day Hotel Stays &amp; Meal Plans</span>
                 </div>
-                <table className="w-full text-xs">
-                  <tbody>
-                    <tr className="border-b border-slate-200/80">
-                      <td className="py-1.5 text-slate-500 font-medium">Hotel:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleHotelFieldBlur("name", e)}
-                        className="py-1.5 font-bold text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedHotel.name}
-                      </td>
-                    </tr>
-                    {selectedHotel.city && (
-                      <tr className="border-b border-slate-200/80">
-                        <td className="py-1.5 text-slate-500 font-medium">City:</td>
-                        <td
-                          contentEditable
-                          suppressContentEditableWarning
-                          onBlur={(e) => handleHotelFieldBlur("city", e)}
-                          className="py-1.5 font-medium text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                        >
-                          {selectedHotel.city}
-                        </td>
-                      </tr>
-                    )}
-                    <tr className="border-b border-slate-200/80">
-                      <td className="py-1.5 text-slate-500 font-medium">Room Type:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleHotelFieldBlur("roomType", e)}
-                        className="py-1.5 font-medium text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedHotel.roomType}
-                      </td>
-                    </tr>
-                    <tr className="border-b border-slate-200/80">
-                      <td className="py-1.5 text-slate-500 font-medium">Meal Plan:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleHotelFieldBlur("mealPlan", e)}
-                        className="py-1.5 font-semibold text-emerald-700 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedHotel.mealPlan}
-                      </td>
-                    </tr>
+                <span className="text-[10px] font-semibold text-slate-500">
+                  All properties verified by Lobo Travels
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
                     <tr>
-                      <td className="py-1.5 text-slate-500 font-medium">Nights:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleHotelFieldBlur("nights", e)}
-                        className="py-1.5 font-medium text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedHotel.nights} Night(s)
-                      </td>
+                      <th className="py-2.5 px-3">Day / Date</th>
+                      <th className="py-2.5 px-3">Destination</th>
+                      <th className="py-2.5 px-3">Hotel / Property</th>
+                      <th className="py-2.5 px-3">Room Category</th>
+                      <th className="py-2.5 px-3">Meal Plan</th>
+                      <th className="py-2.5 px-3 text-right">Stay Status</th>
                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-800">
+                    {days.map((day, dIdx) => {
+                      const acc = getDayAccommodation(day, itineraryData);
+                      const dateInfo = getDayDateInfo(day, dIdx, travelDates);
+                      const isLastDay = dIdx === days.length - 1;
+                      const isCheckOutOnly = day.stops?.some((s) => s.isCheckOut && !s.isOvernight) || isLastDay;
+
+                      return (
+                        <tr key={day.id || dIdx} className="hover:bg-slate-50/60 transition">
+                          {/* Day / Date */}
+                          <td className="py-2.5 px-3 font-semibold whitespace-nowrap">
+                            <span className="font-extrabold text-blue-950">Day {day.dayNumber || dIdx + 1}</span>
+                            {dateInfo.date && (
+                              <span className="block text-[10px] text-slate-400 font-normal">
+                                {dateInfo.date}
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Destination */}
+                          <td className="py-2.5 px-3 font-semibold text-slate-900 whitespace-nowrap">
+                            {acc.city || day.stops?.[0]?.locationName || "Manali"}
+                          </td>
+
+                          {/* Hotel Property */}
+                          <td className="py-2.5 px-3">
+                            <div className="font-bold text-slate-900 flex items-center space-x-1">
+                              <span>{acc.name}</span>
+                              {acc.rating && (
+                                <span className="text-[10px] text-amber-600 font-bold ml-1">★{acc.rating}</span>
+                              )}
+                            </div>
+                            {acc.address && (
+                              <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
+                                {acc.address}
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Room Category */}
+                          <td className="py-2.5 px-3 text-slate-700 whitespace-nowrap">
+                            {acc.roomType || "Deluxe Mountain View Room"}
+                          </td>
+
+                          {/* Meal Plan */}
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              {acc.mealPlan || "MAP (Breakfast & Dinner)"}
+                            </span>
+                          </td>
+
+                          {/* Stay Status */}
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                            {isCheckOutOnly ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                                Check-out &amp; Departure
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-200">
+                                Overnight Stay (Night {dIdx + 1})
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+            </div>
 
-              {/* Vehicle Details */}
-              <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
-                <div className="flex items-center space-x-2 text-indigo-900 font-bold text-xs uppercase mb-3">
+            {/* 5B. DEDICATED CHAUFFEUR & VEHICLE FLEET DETAILS */}
+            <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/70 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 mb-3">
+                <div className="flex items-center space-x-2 text-indigo-950 font-bold text-xs uppercase">
                   <Car className="w-4 h-4 text-indigo-700" />
-                  <span>Vehicle & Transport</span>
+                  <span>Dedicated Private Chauffeur &amp; Vehicle Fleet</span>
                 </div>
-                <table className="w-full text-xs">
-                  <tbody>
-                    <tr className="border-b border-slate-200/80">
-                      <td className="py-1.5 text-slate-500 font-medium">Assigned Vehicle:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleVehicleFieldBlur("name", e)}
-                        className="py-1.5 font-bold text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedVehicle.name}
-                      </td>
-                    </tr>
-                    <tr className="border-b border-slate-200/80">
-                      <td className="py-1.5 text-slate-500 font-medium">Class:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleVehicleFieldBlur("category", e)}
-                        className="py-1.5 font-medium text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedVehicle.category}
-                      </td>
-                    </tr>
-                    <tr className="border-b border-slate-200/80">
-                      <td className="py-1.5 text-slate-500 font-medium">Capacity:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleVehicleFieldBlur("capacity", e)}
-                        className="py-1.5 font-medium text-slate-800 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedVehicle.capacity}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 text-slate-500 font-medium">Chauffeur Service:</td>
-                      <td
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => handleVehicleFieldBlur("features", e)}
-                        className="py-1.5 font-semibold text-blue-700 text-right hover:bg-amber-100 rounded px-1 cursor-text"
-                      >
-                        {selectedVehicle.features || "Dedicated Hill Chauffeur Included"}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded border border-indigo-200">
+                  100% Dedicated Chauffeur
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Assigned Vehicle</span>
+                  <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleVehicleFieldBlur("name", e)}
+                    className="font-bold text-slate-900 block hover:bg-amber-100 rounded px-0.5 cursor-text"
+                  >
+                    {selectedVehicle.name}
+                  </span>
+                  <span className="text-[10px] text-slate-500">{selectedVehicle.category || "Premium MPV / SUV"}</span>
+                </div>
+
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Chauffeur / Driver</span>
+                  <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleVehicleFieldBlur("driverName", e)}
+                    className="font-bold text-slate-900 block hover:bg-amber-100 rounded px-0.5 cursor-text"
+                  >
+                    {selectedVehicle.driverName || "Dedicated Hill Chauffeur"}
+                  </span>
+                  <span className="text-[10px] text-slate-500">{selectedVehicle.driverPhone || "+91 98112 40072"}</span>
+                </div>
+
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Vehicle Number</span>
+                  <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleVehicleFieldBlur("vehicleNo", e)}
+                    className="font-mono font-bold text-blue-900 block hover:bg-amber-100 rounded px-0.5 cursor-text"
+                  >
+                    {selectedVehicle.vehicleNo || "HP 01 CA 5566"}
+                  </span>
+                  <span className="text-[10px] text-slate-500">Commercial Tourist Permit</span>
+                </div>
+
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Seating &amp; Capacity</span>
+                  <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleVehicleFieldBlur("capacity", e)}
+                    className="font-semibold text-slate-800 block hover:bg-amber-100 rounded px-0.5 cursor-text"
+                  >
+                    {selectedVehicle.capacity || "6 Passengers + 1 Driver"}
+                  </span>
+                  <span className="text-[10px] text-emerald-700 font-medium">Luggage Boot Space</span>
+                </div>
+              </div>
+
+              {/* Transport Inclusions Bar */}
+              <div className="mt-3 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-600 flex-wrap gap-2">
+                <div className="flex items-center space-x-1.5 font-medium">
+                  <span className="text-emerald-600 font-bold">✓ Included in Fleet:</span>
+                  <span>Dedicated Chauffeur • Fuel • All State Toll Taxes • Green Taxes • Parking Charges • Driver DA &amp; Night Halt</span>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-500">
+                  Duty: 08:00 AM – 08:00 PM (Hill Routes)
+                </span>
               </div>
             </div>
           </div>
