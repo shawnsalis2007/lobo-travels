@@ -30,7 +30,9 @@ import {
   migrateLegacyDay,
   getDayAccommodation,
   getDayDateInfo,
+  formatIndianRupee,
 } from "../utils/routeUtils";
+import { exportItineraryToPdf } from "../utils/pdfGenerator";
 import { INITIAL_ITINERARY_DATA } from "../data/defaultItinerary";
 import { API_BASE_URL } from "../utils/api";
 
