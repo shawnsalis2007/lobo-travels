@@ -686,20 +686,20 @@ export default function App() {
       </main>
 
       {/* Mobile Bottom Sticky Navigation Bar */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-3 z-40 shadow-lg flex items-center justify-around pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-2 z-40 shadow-lg flex items-center justify-around pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))]">
         <button
           type="button"
           onClick={() => {
             setActiveView("editor");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all min-h-[44px] cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all min-h-[44px] cursor-pointer active:scale-90 ${
             activeView === "editor"
-              ? "text-blue-700 bg-blue-50 font-extrabold"
+              ? "text-blue-700 bg-blue-50 font-extrabold shadow-2xs"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          <span className="text-sm">📝</span>
+          <span className="text-base">📝</span>
           <span>Editor</span>
         </button>
 
@@ -709,13 +709,13 @@ export default function App() {
             setActiveView("preview");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all min-h-[44px] cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all min-h-[44px] cursor-pointer active:scale-90 ${
             activeView === "preview"
-              ? "text-blue-700 bg-blue-50 font-extrabold"
+              ? "text-blue-700 bg-blue-50 font-extrabold shadow-2xs"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          <span className="text-sm">👁️</span>
+          <span className="text-base">👁️</span>
           <span>Preview</span>
         </button>
 
@@ -726,23 +726,33 @@ export default function App() {
             setActiveView("map");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold transition-all min-h-[44px] cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all min-h-[44px] cursor-pointer active:scale-90 ${
             activeView === "map"
-              ? "text-blue-700 bg-blue-50 font-extrabold"
+              ? "text-blue-700 bg-blue-50 font-extrabold shadow-2xs"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          <span className="text-sm">🗺️</span>
+          <span className="text-base">🗺️</span>
           <span>Map</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSaveItinerary}
+          disabled={isSaving}
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold text-emerald-700 active:scale-90 transition-transform min-h-[44px] cursor-pointer disabled:opacity-50"
+        >
+          <span className="text-base">{isSaving ? "⏳" : "💾"}</span>
+          <span>{isSaving ? "Saving" : "Save"}</span>
         </button>
 
         <button
           type="button"
           onClick={handleExportPdf}
           disabled={isExporting}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-bold text-blue-700 active:scale-95 transition-transform min-h-[44px] cursor-pointer disabled:opacity-50"
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold text-blue-700 active:scale-90 transition-transform min-h-[44px] cursor-pointer disabled:opacity-50"
         >
-          <span className="text-sm">{isExporting ? "⏳" : "📥"}</span>
+          <span className="text-base">{isExporting ? "⏳" : "📥"}</span>
           <span>PDF</span>
         </button>
       </nav>

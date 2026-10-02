@@ -119,27 +119,27 @@ export default function Header({
           </div>
 
           {/* Action Buttons Toolbar */}
-          <div className="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto no-scrollbar py-0.5 xl:py-0 w-full xl:w-auto shrink-0 touch-scroll">
+          <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1 xl:py-0 w-full xl:w-auto shrink-0 touch-scroll">
             {/* Cover Photo Button */}
             <button
               onClick={onOpenCoverModal}
               type="button"
-              className="px-2 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50 bg-white rounded-lg border border-slate-200 transition-colors flex items-center space-x-1 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+              className="px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50 bg-white rounded-xl border border-slate-200 transition-colors flex items-center space-x-1.5 shrink-0 cursor-pointer active:scale-95 shadow-2xs min-h-[38px]"
               title="Select Cover Photo for Itinerary"
             >
-              <Image className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden sm:inline">Cover</span>
+              <Image className="w-4 h-4 text-blue-600" />
+              <span>Cover</span>
             </button>
 
             {/* Open Saved Modal */}
             <button
               onClick={onOpenSavedModal}
               type="button"
-              className="px-2 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50 bg-white rounded-lg border border-slate-200 transition-colors flex items-center space-x-1 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+              className="px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50 bg-white rounded-xl border border-slate-200 transition-colors flex items-center space-x-1.5 shrink-0 cursor-pointer active:scale-95 shadow-2xs min-h-[38px]"
               title="View and load saved itineraries"
             >
-              <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden sm:inline">Saved</span>
+              <FolderOpen className="w-4 h-4 text-blue-600" />
+              <span>Saved</span>
             </button>
 
             {/* Dedicated Generate Itinerary Button */}
@@ -148,25 +148,25 @@ export default function Header({
               disabled={isGenerating}
               type="button"
               id="generate-itinerary-btn"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs transition-all flex items-center space-x-1 shrink-0 cursor-pointer disabled:opacity-50 active:scale-95"
+              className="px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer disabled:opacity-50 active:scale-95 min-h-[38px]"
               title="Resolve Wikipedia & photos with strict Token Diet"
             >
-              <Sparkles className={`w-3.5 h-3.5 text-amber-100 ${isGenerating ? "animate-spin" : ""}`} />
-              <span>{isGenerating ? "Enriching…" : "Generate AI"}</span>
+              <Sparkles className={`w-4 h-4 text-amber-100 ${isGenerating ? "animate-spin" : ""}`} />
+              <span>{isGenerating ? "Enriching…" : "AI Generate"}</span>
             </button>
 
             {/* Mark as Confirmed Button */}
             <button
               onClick={onMarkConfirmed}
               type="button"
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center space-x-1 shrink-0 cursor-pointer active:scale-95 shadow-2xs ${
+              className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer active:scale-95 shadow-2xs min-h-[38px] ${
                 isConfirmed
                   ? "bg-emerald-700 text-white border-emerald-800"
                   : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300"
               }`}
               title="Confirm booking, record advance payment & generate travel voucher"
             >
-              <CheckCircle className="w-3.5 h-3.5" />
+              <CheckCircle className="w-4 h-4" />
               <span>{isConfirmed ? "Confirmed" : "Confirm"}</span>
             </button>
 
@@ -176,10 +176,10 @@ export default function Header({
               disabled={isExporting}
               type="button"
               id="export-pdf-btn"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white shadow-2xs transition-all flex items-center space-x-1 shrink-0 cursor-pointer disabled:opacity-50 active:scale-95"
+              className="px-3 py-2 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white shadow-2xs transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer disabled:opacity-50 active:scale-95 min-h-[38px]"
               title="Export client-side Itinerary PDF"
             >
-              <FileDown className="w-3.5 h-3.5 text-blue-100" />
+              <FileDown className="w-4 h-4 text-blue-100" />
               <span>{isExporting ? "PDF…" : "PDF"}</span>
             </button>
 
@@ -189,7 +189,7 @@ export default function Header({
               disabled={!isConfirmed || isExportingVoucher}
               type="button"
               id="export-voucher-btn"
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shrink-0 active:scale-95 shadow-2xs ${
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shrink-0 active:scale-95 shadow-2xs min-h-[38px] ${
                 isConfirmed
                   ? "bg-indigo-700 hover:bg-indigo-800 text-white shadow-2xs cursor-pointer"
                   : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60"
@@ -200,9 +200,21 @@ export default function Header({
                   : "Click 'Confirm' first to unlock Travel Voucher generation"
               }
             >
-              <FileCheck className="w-3.5 h-3.5" />
+              <FileCheck className="w-4 h-4" />
               <span>{isExportingVoucher ? "Voucher…" : "Voucher"}</span>
             </button>
+
+            {/* Settings Button */}
+            {onOpenSettingsModal && (
+              <button
+                onClick={onOpenSettingsModal}
+                type="button"
+                className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 bg-white rounded-xl border border-slate-200 transition-colors flex items-center justify-center shrink-0 cursor-pointer active:scale-95 shadow-2xs min-h-[38px] min-w-[38px]"
+                title="Agency Branding & Settings"
+              >
+                <Settings className="w-4 h-4 text-slate-600" />
+              </button>
+            )}
           </div>
         </div>
       </div>
