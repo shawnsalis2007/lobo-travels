@@ -685,17 +685,17 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
+                  <thead className="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200 text-[10px] uppercase tracking-wider">
                     <tr>
-                      <th className="py-2.5 px-3">Day / Date</th>
-                      <th className="py-2.5 px-3">Destination</th>
-                      <th className="py-2.5 px-3">Hotel / Property</th>
-                      <th className="py-2.5 px-3">Room Category</th>
-                      <th className="py-2.5 px-3">Meal Plan</th>
-                      <th className="py-2.5 px-3 text-right">Stay Status</th>
+                      <th className="py-2 px-2.5 w-[14%]">Day / Date</th>
+                      <th className="py-2 px-2.5 w-[15%]">Destination</th>
+                      <th className="py-2 px-2.5 w-[27%]">Hotel / Property</th>
+                      <th className="py-2 px-2.5 w-[18%]">Room Category</th>
+                      <th className="py-2 px-2.5 w-[13%]">Meal Plan</th>
+                      <th className="py-2 px-2.5 w-[13%] text-right">Stay Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-800">
+                  <tbody className="divide-y divide-slate-100 text-slate-800 text-[11px]">
                     {days.map((day, dIdx) => {
                       const acc = getDayAccommodation(day, itineraryData);
                       const dateInfo = getDayDateInfo(day, dIdx, travelDates);
@@ -705,8 +705,8 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                       return (
                         <tr key={day.id || dIdx} className="hover:bg-slate-50/60 transition">
                           {/* Day / Date */}
-                          <td className="py-2.5 px-3 font-semibold whitespace-nowrap">
-                            <span className="font-extrabold text-blue-950">Day {day.dayNumber || dIdx + 1}</span>
+                          <td className="py-2 px-2.5 font-semibold align-top">
+                            <span className="font-extrabold text-blue-950 block">Day {day.dayNumber || dIdx + 1}</span>
                             {dateInfo.date && (
                               <span className="block text-[10px] text-slate-400 font-normal">
                                 {dateInfo.date}
@@ -715,13 +715,13 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                           </td>
 
                           {/* Destination */}
-                          <td className="py-2.5 px-3 font-semibold text-slate-900 whitespace-nowrap">
+                          <td className="py-2 px-2.5 font-semibold text-slate-900 align-top">
                             {acc.city || day.stops?.[0]?.locationName || "Manali"}
                           </td>
 
                           {/* Hotel Property */}
-                          <td className="py-2.5 px-3">
-                            <div className="font-bold text-slate-900 flex items-center space-x-1">
+                          <td className="py-2 px-2.5 align-top">
+                            <div className="font-bold text-slate-900 flex items-center space-x-1 flex-wrap">
                               <span>{acc.name}</span>
                               {acc.rating && (
                                 <span className="text-[10px] text-amber-600 font-bold ml-1">★{acc.rating}</span>
@@ -735,25 +735,25 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
                           </td>
 
                           {/* Room Category */}
-                          <td className="py-2.5 px-3 text-slate-700 whitespace-nowrap">
+                          <td className="py-2 px-2.5 text-slate-700 align-top">
                             {acc.roomType || "Deluxe Mountain View Room"}
                           </td>
 
                           {/* Meal Plan */}
-                          <td className="py-2.5 px-3 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <td className="py-2 px-2.5 align-top">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                               {acc.mealPlan || "MAP (Breakfast & Dinner)"}
                             </span>
                           </td>
 
                           {/* Stay Status */}
-                          <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                          <td className="py-2 px-2.5 text-right align-top">
                             {isCheckOutOnly ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-900 border border-amber-200">
                                 Check-out &amp; Departure
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-200">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-200">
                                 Overnight Stay (Night {dIdx + 1})
                               </span>
                             )}

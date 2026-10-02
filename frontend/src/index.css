@@ -18,15 +18,33 @@
   box-sizing: border-box;
 }
 
-/* On mobile screen view, adapt PDF preview to fill device width smoothly */
+/* On mobile screen view, adapt interactive preview to fill device width smoothly while preserving fixed A4 width during PDF export */
 @media screen and (max-width: 768px) {
-  .pdf-page {
+  .pdf-page:not(.pdf-render-target) {
     width: 100% !important;
     min-height: auto !important;
     padding: 14px !important;
     max-width: 100% !important;
     border-radius: 16px;
   }
+}
+
+.pdf-render-target {
+  width: 820px !important;
+  min-width: 820px !important;
+  max-width: 820px !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.pdf-render-target .overflow-x-auto,
+.pdf-render-target .overflow-y-auto {
+  overflow: visible !important;
+}
+
+.pdf-render-target table {
+  width: 100% !important;
+  table-layout: auto !important;
 }
 
 /* Page-break avoidance helpers */
