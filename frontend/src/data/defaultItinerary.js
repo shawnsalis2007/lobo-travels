@@ -381,7 +381,7 @@ export const INITIAL_ITINERARY_DATA = {
         {
           name: "Beas River",
           wikiUrl: "https://en.wikipedia.org/wiki/Beas_River",
-          imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+          imageUrl: "https://images.pexels.com/photos/36721869/pexels-photo-36721869.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
           cached: true
         }
       ]

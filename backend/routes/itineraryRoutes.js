@@ -245,12 +245,18 @@ router.post("/attractions", async (req, res) => {
     const enriched = await Promise.all(
       cacheResult.map(async (item) => {
         const pexelsData = await fetchPhotoForDestination(item.name);
+        const resolvedImage =
+          pexelsData.imageUrl ||
+          (item.imageUrl &&
+          !item.imageUrl.includes("photo-1506744038136-46273834b3fb") &&
+          !item.imageUrl.includes("photo-1488646953014-85cb44e25828")
+            ? item.imageUrl
+            : null);
+
         return {
           ...item,
-          imageUrl: pexelsData.source !== "curated-fallback"
-            ? pexelsData.imageUrl
-            : item.imageUrl || pexelsData.imageUrl,
-          fallbackImageUrl: item.imageUrl || pexelsData.imageUrl,
+          imageUrl: resolvedImage || null,
+          fallbackImageUrl: resolvedImage || null,
           photographer: pexelsData.photographer || null,
           photoSource: pexelsData.source,
         };

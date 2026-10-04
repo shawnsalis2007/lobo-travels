@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import ItineraryMap from "../components/ItineraryMap";
 import LivePreview from "../components/LivePreview";
+import AttractionCard from "../components/AttractionCard";
 import {
   buildDriveLine,
   buildTransitLine,
@@ -413,36 +414,7 @@ export default function GuestItineraryView({ refNumber: propRef }) {
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {day.attractionDetails.map((att, aIdx) => (
-                              <div
-                                key={aIdx}
-                                className="border border-slate-200 rounded-xl p-2.5 flex items-center space-x-3 bg-slate-50/50"
-                              >
-                                <img
-                                  src={
-                                    att.imageUrl ||
-                                    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
-                                  }
-                                  alt={att.name}
-                                  className="w-20 h-20 object-cover rounded-lg overflow-hidden shrink-0"
-                                  onError={(e) => {
-                                    e.currentTarget.onerror = null;
-                                    e.currentTarget.src =
-                                      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80";
-                                  }}
-                                />
-                                <div className="min-w-0 flex-1">
-                                  <h5 className="font-bold text-slate-900 truncate">{att.name}</h5>
-                                  <a
-                                    href={att.wikiUrl || "#"}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[11px] font-bold text-blue-600 hover:underline inline-flex items-center space-x-0.5 mt-1"
-                                  >
-                                    <span>Read Wikipedia Guide</span>
-                                    <ExternalLink className="w-2.5 h-2.5" />
-                                  </a>
-                                </div>
-                              </div>
+                              <AttractionCard key={aIdx} attraction={att} />
                             ))}
                           </div>
                         </div>

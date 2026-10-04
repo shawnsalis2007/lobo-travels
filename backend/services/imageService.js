@@ -1,5 +1,11 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 dotenv.config();
 
 // In-memory cache to prevent redundant Pexels API calls
@@ -44,7 +50,7 @@ const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
   "mangla gauri temple": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
   "gaya": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
   "mahabodhi temple": "https://images.unsplash.com/photo-1562979314-bee7453e938c?auto=format&fit=crop&w=800&q=80",
-  "bodhi tree": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  "bodhi tree": "https://images.pexels.com/photos/13894274/pexels-photo-13894274.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   "great buddha statue": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
   "bodh gaya": "https://images.unsplash.com/photo-1562979314-bee7453e938c?auto=format&fit=crop&w=800&q=80",
 
@@ -89,13 +95,14 @@ const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
   "solang valley": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80",
   "solang": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80",
   "atal tunnel": "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=800&q=80",
-  "rohtang pass": "https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&w=800&q=80",
-  "rohtang": "https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&w=800&q=80",
+  "rohtang pass": "https://images.pexels.com/photos/35077792/pexels-photo-35077792.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "rohtang": "https://images.pexels.com/photos/35077792/pexels-photo-35077792.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   "naggar castle": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
   "naggar": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
   "jogini waterfalls": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
   "jogini": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
   "vashisht": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+  "beas river": "https://images.pexels.com/photos/36721869/pexels-photo-36721869.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   "kufri": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
   "taj mahal": "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80",
   "agra fort": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
@@ -104,6 +111,10 @@ const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
   "city palace": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
   "dal lake": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
   "gulmarg": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+  "golden temple": "https://images.pexels.com/photos/14890717/pexels-photo-14890717.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "golden temple amritsar": "https://images.pexels.com/photos/14890717/pexels-photo-14890717.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "pangong lake": "https://images.pexels.com/photos/27593915/pexels-photo-27593915.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "pangong tso": "https://images.pexels.com/photos/27593915/pexels-photo-27593915.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 };
 
 // Curated high-resolution fallback travel images mapped by common travel themes
@@ -142,63 +153,30 @@ export function getDirectAttractionPhoto(query = "") {
 }
 
 /**
- * Returns a suitable fallback placeholder based on keywords in the query.
+ * Returns a suitable fallback placeholder based on keywords in the query if verified, else null.
  */
 export function getCuratedFallback(query = "") {
   const directMatch = getDirectAttractionPhoto(query);
   if (directMatch) {
     return directMatch;
   }
-
-  const q = (query || "").toLowerCase().trim();
-
-  // Thematic category fallback
-  if (q.includes("temple") || q.includes("mandir") || q.includes("monastery") || q.includes("shrine") || q.includes("church") || q.includes("hadimba") || q.includes("ghat") || q.includes("aarti")) {
-    return FALLBACK_CATEGORY_IMAGES.temple;
-  }
-  if (q.includes("snow") || q.includes("glacier") || q.includes("ski") || q.includes("solang") || q.includes("pass") || q.includes("tunnel") || q.includes("rohtang")) {
-    return FALLBACK_CATEGORY_IMAGES.snow;
-  }
-  if (q.includes("waterfall") || q.includes("falls") || q.includes("jogini") || q.includes("springs")) {
-    return FALLBACK_CATEGORY_IMAGES.waterfall;
-  }
-  if (q.includes("mall") || q.includes("market") || q.includes("bazaar") || q.includes("street") || q.includes("shopping")) {
-    return FALLBACK_CATEGORY_IMAGES.market;
-  }
-  if (q.includes("fort") || q.includes("castle") || q.includes("ruin") || q.includes("heritage") || q.includes("naggar") || q.includes("qila")) {
-    return FALLBACK_CATEGORY_IMAGES.fort;
-  }
-  if (q.includes("palace") || q.includes("mahal") || q.includes("haveli")) {
-    return FALLBACK_CATEGORY_IMAGES.palace;
-  }
-  if (q.includes("garden") || q.includes("park") || q.includes("wildlife") || q.includes("sanctuary")) {
-    return FALLBACK_CATEGORY_IMAGES.garden;
-  }
-  if (q.includes("valley") || q.includes("nature") || q.includes("meadow") || q.includes("river") || q.includes("lake") || q.includes("beas") || q.includes("saryu") || q.includes("sangam")) {
-    return FALLBACK_CATEGORY_IMAGES.valley;
-  }
-  if (q.includes("mountain") || q.includes("hill") || q.includes("peak") || q.includes("ridge") || q.includes("trek")) {
-    return FALLBACK_CATEGORY_IMAGES.mountain;
-  }
-  if (q.includes("beach") || q.includes("sea") || q.includes("coast") || q.includes("island")) {
-    return FALLBACK_CATEGORY_IMAGES.beach;
-  }
-  return FALLBACK_CATEGORY_IMAGES.default;
+  return null;
 }
 
 /**
  * Fetches a destination or activity photo from curated overrides or Pexels API.
  * Ensures hardcoded overrides resolve immediately without depending on general searches.
+ * If neither a verified override nor a relevant Pexels photo is found, returns { imageUrl: null, photographer: null, source: "no-image" }.
  *
  * @param {string} query - Destination or attraction name (e.g., "Qutub Minar", "Solang Valley")
- * @returns {Promise<{imageUrl: string, photographer: string, source: string}>}
+ * @returns {Promise<{imageUrl: string | null, photographer: string | null, source: string}>}
  */
 export async function fetchPhotoForDestination(query) {
   if (!query || typeof query !== "string" || !query.trim()) {
     return {
-      imageUrl: FALLBACK_CATEGORY_IMAGES.default,
-      photographer: "Lobo Travels Studio",
-      source: "fallback-placeholder",
+      imageUrl: null,
+      photographer: null,
+      source: "no-image",
     };
   }
 
@@ -226,49 +204,73 @@ export async function fetchPhotoForDestination(query) {
 
   if (pexelsApiKey && pexelsApiKey !== "your_pexels_api_key_here") {
     try {
-      const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(cleanQuery)}&per_page=1&orientation=landscape`;
-      console.log(`📸 [Pexels API] Searching photo for: "${cleanQuery}"`);
+      const searchPexels = async (searchTerm) => {
+        const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchTerm)}&per_page=3&orientation=landscape`;
+        console.log(`📸 [Pexels API] Searching photo for: "${searchTerm}"`);
 
-      const response = await fetch(url, {
-        headers: {
-          Authorization: pexelsApiKey,
-        },
-      });
+        const response = await fetch(url, {
+          headers: {
+            Authorization: pexelsApiKey,
+          },
+        });
 
-      if (response.ok) {
+        if (!response.ok) return null;
         const data = await response.json();
-        if (data && data.photos && data.photos.length > 0) {
-          const photo = data.photos[0];
-          const result = {
-            imageUrl: photo.src.large || photo.src.medium || photo.src.original,
-            photographer: photo.photographer || "Pexels Contributor",
-            photographerUrl: photo.photographer_url || "",
-            source: "pexels",
-          };
+        if (!data || !data.photos || data.photos.length === 0) return null;
 
-          // Cache and return
-          imageMemoryCache.set(cacheKey, result);
-          return result;
-        } else {
-          console.warn(`⚠️ [Pexels API] No photos found for "${cleanQuery}". Using curated fallback.`);
+        // Verify photo relevance using meaningful query tokens
+        const qTokens = searchTerm
+          .toLowerCase()
+          .replace(/[^a-z0-9 ]/g, " ")
+          .split(/\s+/)
+          .filter((w) => w.length > 2 && !["and", "the", "for", "with", "near", "road", "city", "camp"].includes(w));
+
+        for (const photo of data.photos) {
+          const photoMeta = `${photo.alt || ""} ${photo.url || ""}`.toLowerCase();
+          const isMatch = qTokens.length === 0 || qTokens.some((tok) => photoMeta.includes(tok));
+          if (isMatch) {
+            return {
+              imageUrl: photo.src.large || photo.src.medium || photo.src.original,
+              photographer: photo.photographer || "Pexels Contributor",
+              photographerUrl: photo.photographer_url || "",
+              source: "pexels",
+            };
+          }
         }
+        return null;
+      };
+
+      // Search with full clean query
+      let pexelsResult = await searchPexels(cleanQuery);
+
+      // If no match and query has parenthetical note or delimiters, search with cleaned base name
+      if (!pexelsResult && (cleanQuery.includes("(") || cleanQuery.includes("/") || cleanQuery.includes("-"))) {
+        const simplifiedQuery = cleanQuery.replace(/\(.*?\)/g, "").replace(/[-/].*$/, "").trim();
+        if (simplifiedQuery && simplifiedQuery.length > 2 && simplifiedQuery !== cleanQuery) {
+          pexelsResult = await searchPexels(simplifiedQuery);
+        }
+      }
+
+      if (pexelsResult) {
+        imageMemoryCache.set(cacheKey, pexelsResult);
+        return pexelsResult;
       } else {
-        console.warn(`⚠️ [Pexels API] Status ${response.status} for "${cleanQuery}". Using fallback.`);
+        console.warn(`⚠️ [Pexels API] No verified photos found for "${cleanQuery}". No fallback image attached.`);
       }
     } catch (err) {
       console.error(`❌ [Pexels API Error] Failed to fetch photo for "${cleanQuery}":`, err.message);
     }
   }
 
-  // Curated fallback placeholder
-  const fallbackResult = {
-    imageUrl: getCuratedFallback(cleanQuery),
-    photographer: "Unsplash Travel Archive",
-    source: "curated-fallback",
+  // Strictly respect: if images are not available in pexels then don't add any
+  const noImageResult = {
+    imageUrl: null,
+    photographer: null,
+    source: "no-image",
   };
 
-  imageMemoryCache.set(cacheKey, fallbackResult);
-  return fallbackResult;
+  imageMemoryCache.set(cacheKey, noImageResult);
+  return noImageResult;
 }
 
 /**

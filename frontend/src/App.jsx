@@ -456,7 +456,7 @@ export default function App() {
           return {
             name: attName,
             wikiUrl: `https://en.wikipedia.org/wiki/${encodeURIComponent(attName.trim().replace(/\s+/g, "_"))}`,
-            imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+            imageUrl: null,
             cached: false,
           };
         });

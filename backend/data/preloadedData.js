@@ -21,7 +21,7 @@ export const DEFAULT_ATTRACTIONS_SEED = {
   "rohtang pass": {
     name: "Rohtang Pass",
     wikiUrl: "https://en.wikipedia.org/wiki/Rohtang_Pass",
-    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/35077792/pexels-photo-35077792.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     description: "High mountain pass on eastern end of the Pir Panjal Range connecting Kullu and Lahaul."
   },
   "mall road manali": {
@@ -201,7 +201,7 @@ export const DEFAULT_ATTRACTIONS_SEED = {
   "bodhi tree": {
     name: "Bodhi Tree",
     wikiUrl: "https://en.wikipedia.org/wiki/Bodhi_Tree",
-    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.pexels.com/photos/13894274/pexels-photo-13894274.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     description: "Sacred fig tree at Mahabodhi Temple under which Siddhartha Gautama attained enlightenment."
   },
   "great buddha statue": {
