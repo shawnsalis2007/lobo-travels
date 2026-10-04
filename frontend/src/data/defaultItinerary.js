@@ -279,7 +279,7 @@ export const INITIAL_ITINERARY_DATA = {
         {
           name: "Hadimba Temple",
           wikiUrl: "https://en.wikipedia.org/wiki/Hadimba_Temple",
-          imageUrl: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80",
+          imageUrl: "https://images.pexels.com/photos/32690108/pexels-photo-32690108.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
           cached: true
         },
         {
@@ -327,13 +327,13 @@ export const INITIAL_ITINERARY_DATA = {
         {
           name: "Solang Valley",
           wikiUrl: "https://en.wikipedia.org/wiki/Solang_Valley",
-          imageUrl: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=600&q=80",
+          imageUrl: "https://images.pexels.com/photos/6149892/pexels-photo-6149892.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
           cached: true
         },
         {
           name: "Atal Tunnel",
           wikiUrl: "https://en.wikipedia.org/wiki/Atal_Tunnel",
-          imageUrl: "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80",
+          imageUrl: "https://images.pexels.com/photos/29494193/pexels-photo-29494193.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
           cached: true
         }
       ]
@@ -375,7 +375,7 @@ export const INITIAL_ITINERARY_DATA = {
         {
           name: "Naggar Castle",
           wikiUrl: "https://en.wikipedia.org/wiki/Naggar_Castle",
-          imageUrl: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80",
+          imageUrl: "https://images.pexels.com/photos/18406578/pexels-photo-18406578.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
           cached: true
         },
         {
@@ -420,7 +420,7 @@ export const INITIAL_ITINERARY_DATA = {
         {
           name: "Vashisht Hot Water Springs",
           wikiUrl: "https://en.wikipedia.org/wiki/Vashisht,_Himachal_Pradesh",
-          imageUrl: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=600&q=80",
+          imageUrl: "https://images.pexels.com/photos/31776507/pexels-photo-31776507.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
           cached: true
         }
       ]
