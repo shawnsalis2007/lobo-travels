@@ -70,7 +70,7 @@ const POPULAR_DESTINATIONS = [
     region: "Uttar Pradesh",
     city: "Varanasi",
     wikiUrl: "https://en.wikipedia.org/wiki/Varanasi",
-    imageUrl: "https://images.pexels.com/photos/27670662/pexels-photo-27670662.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    imageUrl: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800&auto=format&fit=crop&q=80",
     description: "Spiritual capital of India on the sacred banks of Mother Ganga, revered for timeless ghat rituals and divine evening Maha Aartis.",
     highlights: [
       "Dashashwamedh Ghat",

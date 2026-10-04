@@ -83,8 +83,15 @@ const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
   "sankat mochan hanuman temple": "https://images.pexels.com/photos/36478619/pexels-photo-36478619.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   "kaal bhairav temple": "https://images.pexels.com/photos/36065289/pexels-photo-36065289.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   "manikarnika ghat": "https://images.pexels.com/photos/19272041/pexels-photo-19272041.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
-  "varanasi": "https://images.pexels.com/photos/27670662/pexels-photo-27670662.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
-  "banaras": "https://images.pexels.com/photos/27670662/pexels-photo-27670662.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "varanasi": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800&auto=format&fit=crop&q=80",
+  "banaras": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800&auto=format&fit=crop&q=80",
+  "mathura & vrindavan": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "mathura": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "vrindavan": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "pushkar": "https://images.unsplash.com/photo-1606214174585-fe31582dc6ee?w=800&auto=format&fit=crop&q=80",
+  "ranthambore": "https://images.unsplash.com/photo-1534177616072-ef7dc120449d?w=800&auto=format&fit=crop&q=80",
+  "ranthambhore": "https://images.unsplash.com/photo-1534177616072-ef7dc120449d?w=800&auto=format&fit=crop&q=80",
+  "bikaner": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&auto=format&fit=crop&q=80",
 
   // Dalhousie & Mcleodganj
   "dalhousie": "https://images.pexels.com/photos/30104593/pexels-photo-30104593.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
@@ -215,8 +222,13 @@ export async function fetchPhotoForDestination(query) {
   if (pexelsApiKey && pexelsApiKey !== "your_pexels_api_key_here") {
     try {
       const searchPexels = async (searchTerm) => {
-        const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchTerm)}&per_page=3&orientation=landscape`;
-        console.log(`📸 [Pexels API] Searching photo for: "${searchTerm}"`);
+        // Append ' India travel heritage landmark' to prevent returning unrelated stock photos
+        const searchQuery = searchTerm.toLowerCase().includes("india")
+          ? searchTerm
+          : `${searchTerm} India travel heritage landmark`;
+
+        const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=5&orientation=landscape`;
+        console.log(`📸 [Pexels API] Searching photo with query: "${searchQuery}"`);
 
         const response = await fetch(url, {
           headers: {
@@ -233,7 +245,7 @@ export async function fetchPhotoForDestination(query) {
           .toLowerCase()
           .replace(/[^a-z0-9 ]/g, " ")
           .split(/\s+/)
-          .filter((w) => w.length > 2 && !["and", "the", "for", "with", "near", "road", "city", "camp"].includes(w));
+          .filter((w) => w.length > 2 && !["and", "the", "for", "with", "near", "road", "city", "camp", "india", "travel", "heritage", "landmark"].includes(w));
 
         for (const photo of data.photos) {
           const photoMeta = `${photo.alt || ""} ${photo.url || ""}`.toLowerCase();
