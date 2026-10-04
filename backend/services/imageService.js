@@ -11,6 +11,81 @@ dotenv.config();
 // In-memory cache to prevent redundant Pexels API calls
 const imageMemoryCache = new Map();
 
+
+export const DEFAULT_AUTHENTIC_INDIAN_HERITAGE_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&auto=format&fit=crop&q=80";
+
+// Comprehensive verified static image mapping for all destinations
+export const VERIFIED_DESTINATION_HERO_PHOTOS = {
+  "delhi": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80",
+  "new delhi": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80",
+  "delhi heritage": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80",
+  "agra": "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+  "taj mahal": "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+  "fatehpur-sikri": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&auto=format&fit=crop&q=80",
+  "fatehpur sikri": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&auto=format&fit=crop&q=80",
+  "jaipur": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+  "mathura-vrindavan": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "mathura & vrindavan": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "mathura": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "vrindavan": "https://images.unsplash.com/photo-1545128485-c400e7702796?w=800&auto=format&fit=crop&q=80",
+  "jodhpur": "https://images.unsplash.com/photo-1574950578143-858c6fc58922?auto=format&fit=crop&w=1200&q=80",
+  "udaipur": "https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?auto=format&fit=crop&w=1200&q=80",
+  "jaisalmer": "https://images.unsplash.com/photo-1713349881676-594b95a5742b?w=1200&auto=format&fit=crop&q=80",
+  "pushkar": "https://images.unsplash.com/photo-1606214174585-fe31582dc6ee?w=800&auto=format&fit=crop&q=80",
+  "ranthambore": "https://images.unsplash.com/photo-1534177616072-ef7dc120449d?w=800&auto=format&fit=crop&q=80",
+  "ranthambhore": "https://images.unsplash.com/photo-1534177616072-ef7dc120449d?w=800&auto=format&fit=crop&q=80",
+  "bikaner": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&auto=format&fit=crop&q=80",
+  "varanasi": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800&auto=format&fit=crop&q=80",
+  "banaras": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800&auto=format&fit=crop&q=80",
+  "amritsar": "https://images.unsplash.com/photo-1514222134-b57cbb8ce073?auto=format&fit=crop&w=1200&q=80",
+  "shimla": "https://images.pexels.com/photos/16777016/pexels-photo-16777016.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "manali": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80",
+  "dharamshala": "https://images.pexels.com/photos/37248332/pexels-photo-37248332.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "srinagar": "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=1200&q=80",
+  "gulmarg": "https://images.pexels.com/photos/32620987/pexels-photo-32620987.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "pahalgam": "https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1200&q=80",
+  "rishikesh": "https://images.pexels.com/photos/7542627/pexels-photo-7542627.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "haridwar": "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80",
+  "bharatpur": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+  "mumbai": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80",
+  "goa": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
+  "kerala": "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80",
+  "dalhousie": "https://images.pexels.com/photos/30104593/pexels-photo-30104593.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "mcleodganj": "https://images.pexels.com/photos/755401/pexels-photo-755401.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "ayodhya": "https://images.pexels.com/photos/36478003/pexels-photo-36478003.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "gaya": "https://images.pexels.com/photos/36065289/pexels-photo-36065289.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "bodh-gaya": "https://images.pexels.com/photos/8186112/pexels-photo-8186112.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "bodh gaya": "https://images.pexels.com/photos/8186112/pexels-photo-8186112.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "chitrakoot": "https://images.pexels.com/photos/36402970/pexels-photo-36402970.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "prayagraj": "https://images.pexels.com/photos/30218192/pexels-photo-30218192.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "leh": "https://images.pexels.com/photos/27593915/pexels-photo-27593915.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "ladakh": "https://images.pexels.com/photos/27593915/pexels-photo-27593915.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "solang valley": "https://images.pexels.com/photos/6149892/pexels-photo-6149892.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "hadimba temple": "https://images.pexels.com/photos/32690108/pexels-photo-32690108.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "atal tunnel": "https://images.pexels.com/photos/29494193/pexels-photo-29494193.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "rohtang pass": "https://images.pexels.com/photos/35077792/pexels-photo-35077792.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+};
+
+/**
+ * Resolves a destination hero cover or card thumbnail strictly from verified mappings.
+ * Returns default authentic Indian heritage landscape if unmapped. Never executes dynamic Pexels queries for destinations.
+ */
+export function getVerifiedDestinationHeroPhoto(destinationName = "") {
+  if (!destinationName || typeof destinationName !== "string") {
+    return DEFAULT_AUTHENTIC_INDIAN_HERITAGE_IMAGE;
+  }
+  const clean = destinationName.toLowerCase().trim();
+  if (VERIFIED_DESTINATION_HERO_PHOTOS[clean]) {
+    return VERIFIED_DESTINATION_HERO_PHOTOS[clean];
+  }
+  for (const [key, url] of Object.entries(VERIFIED_DESTINATION_HERO_PHOTOS)) {
+    if (clean.includes(key) || (key.length > 3 && key.includes(clean))) {
+      return url;
+    }
+  }
+  return DEFAULT_AUTHENTIC_INDIAN_HERITAGE_IMAGE;
+}
+
 // Curated verified photos for iconic Indian destinations & sights
 const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
   // Delhi Landmarks
@@ -215,6 +290,22 @@ export async function fetchPhotoForDestination(query) {
     };
     imageMemoryCache.set(cacheKey, directResult);
     return directResult;
+  }
+
+  // 3. Destination hero covers & card thumbnails: Strictly use verified static mappings (Disable dynamic Pexels)
+  const isDestinationQuery = Object.keys(VERIFIED_DESTINATION_HERO_PHOTOS).some(
+    destKey => cacheKey === destKey || cacheKey.includes(destKey) || (destKey.length > 4 && destKey.includes(cacheKey))
+  );
+
+  if (isDestinationQuery) {
+    const verifiedDestPhoto = getVerifiedDestinationHeroPhoto(cleanQuery);
+    const destResult = {
+      imageUrl: verifiedDestPhoto,
+      photographer: "Verified Destination Archive",
+      source: "verified-destination",
+    };
+    imageMemoryCache.set(cacheKey, destResult);
+    return destResult;
   }
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;

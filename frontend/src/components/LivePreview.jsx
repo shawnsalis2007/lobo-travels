@@ -96,7 +96,7 @@ const LivePreview = forwardRef(({ itineraryData, mapImageBase64, onUpdateField }
   const heroCoverUrl =
     coverPhoto?.url ||
     days[0]?.attractionDetails?.[0]?.imageUrl ||
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
+    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&auto=format&fit=crop&q=80";
 
   const arrFlight = managedFlightDetails?.arrivalFlight;
   const depFlight = managedFlightDetails?.departureFlight;
