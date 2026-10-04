@@ -97,6 +97,11 @@ export default function CoverPhotoModal({ isOpen, onClose, days, coverPhoto, onS
                       src={img.url}
                       alt={img.title}
                       className="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-200"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src =
+                          "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&auto=format&fit=crop&q=60";
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                     <div className="absolute bottom-2 left-2 right-2 text-white">

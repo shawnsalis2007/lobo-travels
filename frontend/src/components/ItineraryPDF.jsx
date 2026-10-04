@@ -100,10 +100,19 @@ const ItineraryPDF = forwardRef(({ itineraryData, mapImageBase64, onUpdateField 
           </div>
         </div>
 
-        {/* ─── 2. Tour Hero Overview ──────────────────────────────────── */}
         <div className="avoid-break relative bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white rounded-xl overflow-hidden mb-5 shadow-sm">
           <div className="absolute inset-0 opacity-20 overflow-hidden">
-            <img src={heroCoverUrl} alt="Tour Cover" className="w-full h-full object-cover" crossOrigin="anonymous" />
+            <img
+              src={heroCoverUrl}
+              alt="Tour Cover"
+              className="w-full h-full object-cover"
+              crossOrigin="anonymous"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src =
+                  "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&auto=format&fit=crop&q=60";
+              }}
+            />
           </div>
 
           <div className="relative z-10 p-5">
