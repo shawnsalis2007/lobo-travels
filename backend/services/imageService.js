@@ -7,6 +7,80 @@ const imageMemoryCache = new Map();
 
 // Curated verified photos for iconic Indian destinations & sights
 const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
+  // User hardcoded overrides
+  "qutub minar": "https://images.unsplash.com/photo-1697729438410-d53c666e3810?w=600&auto=format&fit=crop&q=60",
+  "qutb minar": "https://images.unsplash.com/photo-1697729438410-d53c666e3810?w=600&auto=format&fit=crop&q=60",
+  "humayun's tomb": "https://images.unsplash.com/photo-1609670289875-590e8ec05c88?w=600&auto=format&fit=crop&q=60",
+  "humayuns tomb": "https://images.unsplash.com/photo-1609670289875-590e8ec05c88?w=600&auto=format&fit=crop&q=60",
+  "humayun tomb": "https://images.unsplash.com/photo-1609670289875-590e8ec05c88?w=600&auto=format&fit=crop&q=60",
+  "india gate": "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&auto=format&fit=crop&q=60",
+  "red fort": "https://images.unsplash.com/photo-1705524220939-dac17cf94236?w=600&auto=format&fit=crop&q=60",
+  "lal qila": "https://images.unsplash.com/photo-1705524220939-dac17cf94236?w=600&auto=format&fit=crop&q=60",
+  "jaisalmer fort": "https://images.unsplash.com/photo-1713349881676-594b95a5742b?w=600&auto=format&fit=crop&q=60",
+  "sonar qila": "https://images.unsplash.com/photo-1713349881676-594b95a5742b?w=600&auto=format&fit=crop&q=60",
+  "golden fort": "https://images.unsplash.com/photo-1713349881676-594b95a5742b?w=600&auto=format&fit=crop&q=60",
+  "jaisalmer fort (sonar qila / golden fort)": "https://images.unsplash.com/photo-1713349881676-594b95a5742b?w=600&auto=format&fit=crop&q=60",
+  "sam sand dunes": "https://plus.unsplash.com/premium_photo-1661936495413-875706d59696?w=600&auto=format&fit=crop&q=60",
+  "sam sand dunes camel safari": "https://plus.unsplash.com/premium_photo-1661936495413-875706d59696?w=600&auto=format&fit=crop&q=60",
+  "sam sand dunes camel safari & desert camp": "https://plus.unsplash.com/premium_photo-1661936495413-875706d59696?w=600&auto=format&fit=crop&q=60",
+  "desert camp jaisalmer": "https://plus.unsplash.com/premium_photo-1661936495413-875706d59696?w=600&auto=format&fit=crop&q=60",
+  "patwon ki haveli": "https://images.unsplash.com/photo-1677649117932-4c8abf3e27bb?w=600&auto=format&fit=crop&q=60",
+  "patwa haveli": "https://images.unsplash.com/photo-1677649117932-4c8abf3e27bb?w=600&auto=format&fit=crop&q=60",
+
+  // New Ayodhya Attractions
+  "shree ram janmabhumi temple": "https://images.unsplash.com/photo-1706696950948-285f1c247348?auto=format&fit=crop&w=800&q=80",
+  "ram janmabhumi": "https://images.unsplash.com/photo-1706696950948-285f1c247348?auto=format&fit=crop&w=800&q=80",
+  "ram mandir": "https://images.unsplash.com/photo-1706696950948-285f1c247348?auto=format&fit=crop&w=800&q=80",
+  "ram janmabhoomi": "https://images.unsplash.com/photo-1706696950948-285f1c247348?auto=format&fit=crop&w=800&q=80",
+  "hanuman garhi": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+  "ram ki paidi - saryu river / saryu aarti": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "ram ki paidi": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "saryu river": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "saryu aarti": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "ayodhya": "https://images.unsplash.com/photo-1706696950948-285f1c247348?auto=format&fit=crop&w=800&q=80",
+
+  // New Gaya & Bodh Gaya Attractions
+  "vishnupad temple": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "mangla gauri temple": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+  "gaya": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+  "mahabodhi temple": "https://images.unsplash.com/photo-1562979314-bee7453e938c?auto=format&fit=crop&w=800&q=80",
+  "bodhi tree": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  "great buddha statue": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+  "bodh gaya": "https://images.unsplash.com/photo-1562979314-bee7453e938c?auto=format&fit=crop&w=800&q=80",
+
+  // New Chitrakoot Attractions
+  "ramghat": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "kamadgiri temple": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "kamadgiri": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "chitrakoot": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+
+  // New Prayagraj Attractions
+  "triveni sangam": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
+  "sangam prayagraj": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
+  "shri bade hanuman ji mandir": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+  "bade hanuman": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+  "prayagraj": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
+  "allahabad": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
+
+  // New Varanasi Attractions
+  "dashashwamedh ghat": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "assi ghat": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+  "shri kashi vishwanath temple": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "kashi vishwanath": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "sankat mochan hanuman temple": "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+  "kaal bhairav temple": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "manikarnika ghat": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "varanasi": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+  "banaras": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+
+  // Dalhousie & Mcleodganj
+  "dalhousie": "https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=800&q=80",
+  "khajjiar": "https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=800&q=80",
+  "mcleodganj": "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
+  "namgyal monastery": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+  "bhagsunag": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
+
+  // Existing Himachal & North India
   "hadimba": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
   "hadimba temple": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
   "mall road": "https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?auto=format&fit=crop&w=800&q=80",
@@ -30,9 +104,6 @@ const KNOWN_ATTRACTION_DIRECT_PHOTOS = {
   "city palace": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
   "dal lake": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
   "gulmarg": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
-  "red fort": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80",
-  "qutub minar": "https://images.unsplash.com/photo-1585136917192-3c81121d5a7d?auto=format&fit=crop&w=800&q=80",
-  "india gate": "https://images.unsplash.com/photo-1592635196078-9fdc757f27f4?auto=format&fit=crop&w=800&q=80",
 };
 
 // Curated high-resolution fallback travel images mapped by common travel themes
@@ -51,23 +122,38 @@ const FALLBACK_CATEGORY_IMAGES = {
 };
 
 /**
- * Returns a suitable fallback placeholder based on keywords in the query.
+ * Checks if an attraction has a direct hardcoded override photo
  */
-export function getCuratedFallback(query = "") {
-  const q = query.toLowerCase().trim();
+export function getDirectAttractionPhoto(query = "") {
+  const q = (query || "").toLowerCase().trim();
+  if (!q) return null;
 
-  // 1. Check known specific attractions first
   if (KNOWN_ATTRACTION_DIRECT_PHOTOS[q]) {
     return KNOWN_ATTRACTION_DIRECT_PHOTOS[q];
   }
+
   for (const [key, url] of Object.entries(KNOWN_ATTRACTION_DIRECT_PHOTOS)) {
-    if (q.includes(key) || key.includes(q)) {
+    if (q.includes(key) || (key.length > 4 && key.includes(q))) {
       return url;
     }
   }
 
-  // 2. Thematic category fallback
-  if (q.includes("temple") || q.includes("mandir") || q.includes("monastery") || q.includes("shrine") || q.includes("church") || q.includes("hadimba")) {
+  return null;
+}
+
+/**
+ * Returns a suitable fallback placeholder based on keywords in the query.
+ */
+export function getCuratedFallback(query = "") {
+  const directMatch = getDirectAttractionPhoto(query);
+  if (directMatch) {
+    return directMatch;
+  }
+
+  const q = (query || "").toLowerCase().trim();
+
+  // Thematic category fallback
+  if (q.includes("temple") || q.includes("mandir") || q.includes("monastery") || q.includes("shrine") || q.includes("church") || q.includes("hadimba") || q.includes("ghat") || q.includes("aarti")) {
     return FALLBACK_CATEGORY_IMAGES.temple;
   }
   if (q.includes("snow") || q.includes("glacier") || q.includes("ski") || q.includes("solang") || q.includes("pass") || q.includes("tunnel") || q.includes("rohtang")) {
@@ -79,7 +165,7 @@ export function getCuratedFallback(query = "") {
   if (q.includes("mall") || q.includes("market") || q.includes("bazaar") || q.includes("street") || q.includes("shopping")) {
     return FALLBACK_CATEGORY_IMAGES.market;
   }
-  if (q.includes("fort") || q.includes("castle") || q.includes("ruin") || q.includes("heritage") || q.includes("naggar")) {
+  if (q.includes("fort") || q.includes("castle") || q.includes("ruin") || q.includes("heritage") || q.includes("naggar") || q.includes("qila")) {
     return FALLBACK_CATEGORY_IMAGES.fort;
   }
   if (q.includes("palace") || q.includes("mahal") || q.includes("haveli")) {
@@ -88,7 +174,7 @@ export function getCuratedFallback(query = "") {
   if (q.includes("garden") || q.includes("park") || q.includes("wildlife") || q.includes("sanctuary")) {
     return FALLBACK_CATEGORY_IMAGES.garden;
   }
-  if (q.includes("valley") || q.includes("nature") || q.includes("meadow") || q.includes("river") || q.includes("lake") || q.includes("beas")) {
+  if (q.includes("valley") || q.includes("nature") || q.includes("meadow") || q.includes("river") || q.includes("lake") || q.includes("beas") || q.includes("saryu") || q.includes("sangam")) {
     return FALLBACK_CATEGORY_IMAGES.valley;
   }
   if (q.includes("mountain") || q.includes("hill") || q.includes("peak") || q.includes("ridge") || q.includes("trek")) {
@@ -101,11 +187,10 @@ export function getCuratedFallback(query = "") {
 }
 
 /**
- * Fetches a destination or activity photo from Pexels API.
- * Falls back to high-resolution travel placeholders if Pexels API key is not provided,
- * if rate limits are exceeded, or if no matching photos are returned.
+ * Fetches a destination or activity photo from curated overrides or Pexels API.
+ * Ensures hardcoded overrides resolve immediately without depending on general searches.
  *
- * @param {string} query - Destination or attraction name (e.g., "Solang Valley", "Hadimba Temple")
+ * @param {string} query - Destination or attraction name (e.g., "Qutub Minar", "Solang Valley")
  * @returns {Promise<{imageUrl: string, photographer: string, source: string}>}
  */
 export async function fetchPhotoForDestination(query) {
@@ -120,9 +205,21 @@ export async function fetchPhotoForDestination(query) {
   const cleanQuery = query.trim();
   const cacheKey = cleanQuery.toLowerCase();
 
-  // Check in-memory cache first
+  // 1. Check in-memory cache first
   if (imageMemoryCache.has(cacheKey)) {
     return imageMemoryCache.get(cacheKey);
+  }
+
+  // 2. Direct hardcoded overrides: Never depend on external searches
+  const directMatch = getDirectAttractionPhoto(cleanQuery);
+  if (directMatch) {
+    const directResult = {
+      imageUrl: directMatch,
+      photographer: "Verified Attraction Archive",
+      source: "direct-override",
+    };
+    imageMemoryCache.set(cacheKey, directResult);
+    return directResult;
   }
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;

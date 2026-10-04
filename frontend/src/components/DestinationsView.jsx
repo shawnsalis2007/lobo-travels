@@ -48,6 +48,129 @@ const POPULAR_DESTINATIONS = [
     highlights: ["Christ Church", "Gaiety Theatre", "Lakkar Bazaar", "Jakhoo Hill"],
   },
   {
+    name: "Dalhousie",
+    region: "Himachal Pradesh",
+    city: "Dalhousie",
+    wikiUrl: "https://en.wikipedia.org/wiki/Dalhousie,_Himachal_Pradesh",
+    imageUrl: "https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=800&q=80",
+    description: "Quaint colonial hill station perched on five hills, offering panoramic Dhauladhar views and pine-scented trails.",
+    highlights: ["Khajjiar Mini Switzerland", "Dainkund Peak", "Panchpula", "Kalatop Wildlife Sanctuary"],
+  },
+  {
+    name: "Mcleodganj",
+    region: "Himachal Pradesh",
+    city: "Dharamshala",
+    wikiUrl: "https://en.wikipedia.org/wiki/McLeod_Ganj",
+    imageUrl: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
+    description: "Little Lhasa of India and residence of His Holiness the Dalai Lama, surrounded by majestic cedars and Tibetan monasteries.",
+    highlights: ["Tsuglagkhang Dalai Lama Complex", "Bhagsunag Waterfall", "Namgyal Monastery", "Triund Trek"],
+  },
+  {
+    name: "Varanasi",
+    region: "Uttar Pradesh",
+    city: "Varanasi",
+    wikiUrl: "https://en.wikipedia.org/wiki/Varanasi",
+    imageUrl: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80",
+    description: "Spiritual capital of India on the sacred banks of Mother Ganga, revered for timeless ghat rituals and divine evening Maha Aartis.",
+    highlights: [
+      "Dashashwamedh Ghat",
+      "Assi Ghat",
+      "Shri Kashi Vishwanath Temple",
+      "Sankat Mochan Hanuman Temple",
+      "Kaal Bhairav Temple",
+      "Manikarnika Ghat"
+    ],
+  },
+  {
+    name: "Ayodhya",
+    region: "Uttar Pradesh",
+    city: "Ayodhya",
+    wikiUrl: "https://en.wikipedia.org/wiki/Ayodhya",
+    imageUrl: "https://images.unsplash.com/photo-1706696950948-285f1c247348?auto=format&fit=crop&w=800&q=80",
+    description: "Sacred birthplace of Lord Rama on the banks of holy Saryu River, celebrating centuries of heritage and devotion.",
+    highlights: [
+      "Shree Ram Janmabhumi Temple",
+      "Hanuman Garhi",
+      "Ram Ki Paidi - Saryu River / Saryu Aarti"
+    ],
+  },
+  {
+    name: "Prayagraj",
+    region: "Uttar Pradesh",
+    city: "Prayagraj",
+    wikiUrl: "https://en.wikipedia.org/wiki/Prayagraj",
+    imageUrl: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
+    description: "Holy Sangam city where Ganga, Yamuna, and Saraswati unite, host to the iconic Kumbh Mela and sacred pilgrimage shrines.",
+    highlights: [
+      "Triveni Sangam",
+      "Shri Bade Hanuman Ji Mandir"
+    ],
+  },
+  {
+    name: "Chitrakoot",
+    region: "Uttar Pradesh",
+    city: "Chitrakoot",
+    wikiUrl: "https://en.wikipedia.org/wiki/Chitrakoot,_Madhya_Pradesh",
+    imageUrl: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+    description: "Forest sanctuary of deep spiritual lore where Lord Rama spent eleven years of exile among peaceful hills and Mandakini ghats.",
+    highlights: [
+      "Ramghat",
+      "Kamadgiri Temple"
+    ],
+  },
+  {
+    name: "Bodh Gaya",
+    region: "Bihar",
+    city: "Bodh Gaya",
+    wikiUrl: "https://en.wikipedia.org/wiki/Bodh_Gaya",
+    imageUrl: "https://images.unsplash.com/photo-1562979314-bee7453e938c?auto=format&fit=crop&w=800&q=80",
+    description: "The supreme cradle of Buddhism where Gautama Buddha attained enlightenment beneath the sacred Bodhi Tree.",
+    highlights: [
+      "Mahabodhi Temple",
+      "Bodhi Tree",
+      "Great Buddha Statue"
+    ],
+  },
+  {
+    name: "Gaya",
+    region: "Bihar",
+    city: "Gaya",
+    wikiUrl: "https://en.wikipedia.org/wiki/Gaya_(India)",
+    imageUrl: "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=800&q=80",
+    description: "Ancient holy city on the banks of Falgu River, renowned for shraddha Pind Daan rituals and historic Shakti Peethas.",
+    highlights: [
+      "Vishnupad Temple",
+      "Mangla Gauri Temple"
+    ],
+  },
+  {
+    name: "Jaisalmer",
+    region: "Rajasthan",
+    city: "Jaisalmer",
+    wikiUrl: "https://en.wikipedia.org/wiki/Jaisalmer",
+    imageUrl: "https://images.unsplash.com/photo-1713349881676-594b95a5742b?w=600&auto=format&fit=crop&q=60",
+    description: "The Golden City of Thar desert renowned for yellow sandstone architecture, living fortresses, and sweeping sand dunes.",
+    highlights: [
+      "Jaisalmer Fort (Sonar Qila / Golden Fort)",
+      "Sam Sand Dunes Camel Safari & Desert Camp",
+      "Patwon Ki Haveli"
+    ],
+  },
+  {
+    name: "Delhi Heritage",
+    region: "Golden Triangle",
+    city: "New Delhi",
+    wikiUrl: "https://en.wikipedia.org/wiki/Delhi",
+    imageUrl: "https://images.unsplash.com/photo-1697729438410-d53c666e3810?w=600&auto=format&fit=crop&q=60",
+    description: "Historical capital showcasing centuries of monumental architecture from Sultanates to Mughals and Lutyens grandeur.",
+    highlights: [
+      "Qutub Minar",
+      "Humayun's Tomb",
+      "India Gate",
+      "Red Fort"
+    ],
+  },
+  {
     name: "Taj Mahal",
     region: "Golden Triangle",
     city: "Agra",
@@ -89,7 +212,15 @@ export default function DestinationsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("All");
 
-  const regions = ["All", "Himachal Pradesh", "Golden Triangle", "Rajasthan", "Ladakh & Kashmir"];
+  const regions = [
+    "All",
+    "Himachal Pradesh",
+    "Uttar Pradesh",
+    "Bihar",
+    "Rajasthan",
+    "Golden Triangle",
+    "Ladakh & Kashmir",
+  ];
 
   const filtered = POPULAR_DESTINATIONS.filter((d) => {
     const regionMatch = selectedRegion === "All" || d.region === selectedRegion;
