@@ -208,7 +208,7 @@ const POPULAR_DESTINATIONS = [
   },
 ];
 
-export default function DestinationsView() {
+export default function DestinationsView({ onPlanItinerary }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("All");
 
@@ -332,21 +332,28 @@ export default function DestinationsView() {
             </div>
 
             {/* Footer */}
-            <div className="p-4 pt-0 flex items-center justify-between border-t border-slate-100 pt-3">
-              <span className="text-[11px] font-medium text-slate-400 flex items-center space-x-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Wikipedia Verified</span>
-              </span>
-
+            <div className="p-4 pt-3 flex items-center justify-between border-t border-slate-100 gap-2 flex-wrap">
               <a
                 href={item.wikiUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-bold text-purple-700 hover:text-purple-900 flex items-center space-x-1 hover:underline"
+                className="text-xs font-bold text-slate-500 hover:text-purple-700 flex items-center space-x-1 hover:underline"
               >
-                <span>Read Guide</span>
+                <span>Wiki Guide</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
+
+              {onPlanItinerary && (
+                <button
+                  type="button"
+                  onClick={() => onPlanItinerary(item)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 hover:bg-purple-800 text-white shadow-2xs transition flex items-center space-x-1.5 cursor-pointer active:scale-95"
+                  title={`Start planning tour for ${item.name}`}
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span>Plan Tour Here</span>
+                </button>
+              )}
             </div>
           </div>
         ))}

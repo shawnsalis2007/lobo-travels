@@ -9,6 +9,10 @@ import {
   FileCheck,
   Image,
   Settings,
+  FileText,
+  MapPin,
+  Building2,
+  Compass,
 } from "lucide-react";
 import GlobalRefSearch from "./GlobalRefSearch";
 
@@ -33,6 +37,8 @@ export default function Header({
   backendStatus,
   itineraryStatus,
   voucherRef,
+  currentTab = "itinerary",
+  onSelectTab,
 }) {
   const isConfirmed = itineraryStatus === "Confirmed";
 
@@ -217,6 +223,65 @@ export default function Header({
             )}
           </div>
         </div>
+
+        {/* Primary View Navigation Tabs */}
+        {onSelectTab && (
+          <div className="flex items-center space-x-1 border-t border-slate-100 py-2 overflow-x-auto no-scrollbar">
+            <button
+              type="button"
+              onClick={() => onSelectTab("itinerary")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+                currentTab === "itinerary"
+                  ? "bg-blue-700 text-white shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Itinerary Studio</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectTab("destinations")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+                currentTab === "destinations"
+                  ? "bg-purple-700 text-white shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Curated Destinations</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ml-1 ${
+                currentTab === "destinations" ? "bg-purple-900 text-purple-200" : "bg-purple-100 text-purple-800"
+              }`}>
+                Updated
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectTab("hotels")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+                currentTab === "hotels"
+                  ? "bg-emerald-700 text-white shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Hotels Directory</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectTab("dashboard")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+                currentTab === "dashboard"
+                  ? "bg-slate-900 text-white shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>Operations Dashboard</span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

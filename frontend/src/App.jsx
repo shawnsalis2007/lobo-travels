@@ -10,6 +10,9 @@ import KPICardsBar from "./components/KPICardsBar";
 import RecentItinerariesTable from "./components/RecentItinerariesTable";
 import TravelVoucherPDF from "./components/TravelVoucherPDF";
 import ItineraryMap from "./components/ItineraryMap";
+import DestinationsView from "./components/DestinationsView";
+import HotelsDirectoryView from "./components/HotelsDirectoryView";
+import DashboardView from "./components/DashboardView";
 import GuestItineraryView from "./pages/GuestItineraryView";
 import { INITIAL_ITINERARY_DATA, createBlankItinerary } from "./data/defaultItinerary";
 import {
@@ -20,7 +23,7 @@ import {
 } from "./utils/api";
 import { exportItineraryToPdf, exportVoucherToPdf } from "./utils/pdfGenerator";
 import { captureMapSnapshot } from "./utils/mapSnapshot";
-import { getAllAttractionsForDay, migrateLegacyDay, createDay } from "./utils/routeUtils";
+import { getAllAttractionsForDay, migrateLegacyDay, createDay, createStop } from "./utils/routeUtils";
 import {
   Sparkles,
   CheckCircle,
@@ -67,6 +70,7 @@ export default function App() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [showRouteMap, setShowRouteMap] = useState(true);
   const [activeView, setActiveView] = useState("split"); // 'split' | 'editor' | 'preview' | 'map'
+  const [mainTab, setMainTab] = useState("itinerary"); // 'itinerary' | 'destinations' | 'hotels' | 'dashboard'
   const [toast, setToast] = useState(null);
   const [backendStatus, setBackendStatus] = useState(null);
   const [stats, setStats] = useState({ cacheHits: 6, geminiCalls: 1, tokensSaved: "94%" });
@@ -354,6 +358,52 @@ export default function App() {
     showToast("info", `Deleted record ${refNumber}.`);
   };
 
+  // ── Plan From Destination Catalog ────────────────────────────────────────
+  const handlePlanFromDestination = (dest) => {
+    setItineraryData((prev) => {
+      const destinationTitle = `${dest.name} Tour Package (${dest.city})`;
+      const updatedDays = prev.days && prev.days.length > 0 ? [...prev.days] : [createDay(1)];
+      if (updatedDays[0]) {
+        const firstStop = updatedDays[0].stops?.[0] || createStop(dest.city);
+        firstStop.locationName = dest.city;
+        firstStop.attractions = dest.highlights ? [...dest.highlights] : firstStop.attractions;
+        updatedDays[0] = {
+          ...updatedDays[0],
+          title: `Day 1 - Arrival & ${dest.name} Sightseeing`,
+          stops: [firstStop],
+          attractions: dest.highlights ? [...dest.highlights] : updatedDays[0].attractions,
+        };
+      }
+      return {
+        ...prev,
+        destinationTitle,
+        days: updatedDays,
+      };
+    });
+    setMainTab("itinerary");
+    setActiveView("editor");
+    showToast("success", `Loaded ${dest.name} into Itinerary Builder!`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ── Apply Hotel From Directory ───────────────────────────────────────────
+  const handleSelectHotelFromDirectory = (hotel) => {
+    handleFieldChange("selectedHotel", {
+      ...itineraryData.selectedHotel,
+      name: hotel.name,
+      city: hotel.city || itineraryData.selectedHotel.city,
+      category: hotel.category || itineraryData.selectedHotel.category,
+      roomType: hotel.roomType || itineraryData.selectedHotel.roomType,
+      mealPlan: hotel.mealPlan || itineraryData.selectedHotel.mealPlan,
+      rating: hotel.rating || itineraryData.selectedHotel.rating,
+      address: hotel.address || itineraryData.selectedHotel.address,
+      mapsUrl: hotel.mapsUrl || itineraryData.selectedHotel.mapsUrl,
+    });
+    setMainTab("itinerary");
+    showToast("success", `Applied "${hotel.name}" to active itinerary!`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // ── Mark as Confirmed ────────────────────────────────────────────────────
   const handleConfirmItinerary = (patch) => {
     const voucherRef = itineraryData.refNumber.replace("LT-", "LTV-");
@@ -501,6 +551,11 @@ export default function App() {
         backendStatus={backendStatus}
         itineraryStatus={itineraryData.status}
         voucherRef={itineraryData.voucherRef}
+        currentTab={mainTab}
+        onSelectTab={(tab) => {
+          setMainTab(tab);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
       />
 
       {/* Toast */}
@@ -555,146 +610,194 @@ export default function App() {
         onResetDemoData={handleResetDemoData}
       />
 
-      {/* ── 5 Operations KPI Metric Cards + Reset, Save & Create Blank CTA ── */}
-      <KPICardsBar
-        itineraries={itinerariesList}
-        onCreateBlank={handleCreateNewBlankItinerary}
-        onReset={handleResetTemplate}
-        onSave={handleSaveItinerary}
-        isSaving={isSaving}
-        onFilterClick={() => setIsSavedModalOpen(true)}
-      />
+      {/* ── View Routing Based on Selected Navigation Tab ── */}
+      {mainTab === "destinations" ? (
+        <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-28 sm:pb-12">
+          <DestinationsView onPlanItinerary={handlePlanFromDestination} />
+        </main>
+      ) : mainTab === "hotels" ? (
+        <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-28 sm:pb-12">
+          <HotelsDirectoryView onSelectHotelForItinerary={handleSelectHotelFromDirectory} />
+        </main>
+      ) : mainTab === "dashboard" ? (
+        <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-28 sm:pb-12">
+          <DashboardView
+            itineraries={itinerariesList}
+            onCreateItinerary={handleCreateNewBlankItinerary}
+            onNewItinerary={handleCreateNewBlankItinerary}
+            onEditItinerary={(item) => {
+              handleLoadItinerary(item);
+              setMainTab("itinerary");
+              setActiveView("editor");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onViewItinerary={(item) => {
+              handleLoadItinerary(item);
+              setMainTab("itinerary");
+              setActiveView("preview");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onDuplicateItinerary={handleDuplicateItinerary}
+            onDeleteItinerary={handleDeleteItinerary}
+            onExportPdf={(item) => {
+              handleLoadItinerary(item);
+              setTimeout(() => handleExportPdf(), 300);
+            }}
+            onExportVoucher={(item) => {
+              handleLoadItinerary(item);
+              setTimeout(() => handleExportVoucher(), 300);
+            }}
+            onSelectTab={setMainTab}
+          />
+        </main>
+      ) : (
+        <>
+          {/* ── 5 Operations KPI Metric Cards + Reset, Save & Create Blank CTA ── */}
+          <KPICardsBar
+            itineraries={itinerariesList}
+            onCreateBlank={handleCreateNewBlankItinerary}
+            onReset={handleResetTemplate}
+            onSave={handleSaveItinerary}
+            isSaving={isSaving}
+            onFilterClick={() => setIsSavedModalOpen(true)}
+          />
 
-      {/* Main Studio Body */}
-      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-28 sm:pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Form Editor - Expanded, Spacious, Full Height */}
-          <section
-            className={`lg:col-span-6 xl:col-span-5 w-full h-auto ${
-              activeView === "editor" || activeView === "split" ? "block" : "hidden lg:block"
-            }`}
-          >
-            <ItineraryForm
-              itineraryData={itineraryData}
-              onChangeField={handleFieldChange}
-              onAddDay={handleAddDay}
-              onAddDayBelow={handleAddDayBelow}
-              onUpdateDay={handleUpdateDay}
-              onDeleteDay={handleDeleteDay}
-              onMoveDayUp={handleMoveDayUp}
-              onMoveDayDown={handleMoveDayDown}
-              onGenerate={handleGenerateItinerary}
-              isGenerating={isGenerating}
-            />
-          </section>
+          {/* Main Studio Body */}
+          <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 pb-28 sm:pb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Form Editor - Expanded, Spacious, Full Height */}
+              <section
+                className={`lg:col-span-6 xl:col-span-5 w-full h-auto ${
+                  activeView === "editor" || activeView === "split" ? "block" : "hidden lg:block"
+                }`}
+              >
+                <ItineraryForm
+                  itineraryData={itineraryData}
+                  onChangeField={handleFieldChange}
+                  onAddDay={handleAddDay}
+                  onAddDayBelow={handleAddDayBelow}
+                  onUpdateDay={handleUpdateDay}
+                  onDeleteDay={handleDeleteDay}
+                  onMoveDayUp={handleMoveDayUp}
+                  onMoveDayDown={handleMoveDayDown}
+                  onGenerate={handleGenerateItinerary}
+                  isGenerating={isGenerating}
+                />
+              </section>
 
-          {/* Right Live & Editable Preview with Map right on top */}
-          <section
-            className={`lg:col-span-6 xl:col-span-7 w-full ${
-              activeView === "preview" || activeView === "map" || activeView === "split"
-                ? "block"
-                : "hidden lg:block"
-            }`}
-          >
-            {/* Top Helper & Controls Bar */}
-            <div className="mb-3 flex items-center justify-between text-xs text-slate-500 px-2 flex-wrap gap-2">
-              <div className="flex items-center space-x-1.5 font-medium">
-                <Eye className="w-4 h-4 text-blue-600" />
-                <span>Live Interactive Preview</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                  Tap text to edit inline
-                </span>
-              </div>
+              {/* Right Live & Editable Preview with Map right on top */}
+              <section
+                className={`lg:col-span-6 xl:col-span-7 w-full ${
+                  activeView === "preview" || activeView === "map" || activeView === "split"
+                    ? "block"
+                    : "hidden lg:block"
+                }`}
+              >
+                {/* Top Helper & Controls Bar */}
+                <div className="mb-3 flex items-center justify-between text-xs text-slate-500 px-2 flex-wrap gap-2">
+                  <div className="flex items-center space-x-1.5 font-medium">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <span>Live Interactive Preview</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      Tap text to edit inline
+                    </span>
+                  </div>
 
-              <div className="flex items-center space-x-2">
-                {/* Toggle Route Map */}
-                <button
-                  type="button"
-                  onClick={() => setShowRouteMap(!showRouteMap)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center space-x-1.5 transition-colors cursor-pointer ${
-                    showRouteMap
-                      ? "bg-blue-50 text-blue-700 border-blue-300 font-bold"
-                      : "bg-white text-slate-600 hover:bg-slate-50 border-slate-200"
-                  }`}
-                  title="Toggle interactive route map"
-                >
-                  <Map className="w-3.5 h-3.5 text-blue-600" />
-                  <span>{showRouteMap ? "Hide Map" : "Show Map"}</span>
-                </button>
+                  <div className="flex items-center space-x-2">
+                    {/* Toggle Route Map */}
+                    <button
+                      type="button"
+                      onClick={() => setShowRouteMap(!showRouteMap)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                        showRouteMap
+                          ? "bg-blue-50 text-blue-700 border-blue-300 font-bold"
+                          : "bg-white text-slate-600 hover:bg-slate-50 border-slate-200"
+                      }`}
+                      title="Toggle interactive route map"
+                    >
+                      <Map className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{showRouteMap ? "Hide Map" : "Show Map"}</span>
+                    </button>
 
-                {itineraryData.status === "Confirmed" && (
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
-                    <CheckCircle className="w-3 h-3 text-emerald-600" />
-                    <span>CONFIRMED</span>
-                  </span>
+                    {itineraryData.status === "Confirmed" && (
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
+                        <CheckCircle className="w-3 h-3 text-emerald-600" />
+                        <span>CONFIRMED</span>
+                      </span>
+                    )}
+                    <span className="text-[11px] text-slate-400">
+                      Ref: <strong className="text-slate-600">{itineraryData.refNumber}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Interactive Leaflet Route Map directly above Live Preview */}
+                {(showRouteMap || activeView === "map") && (
+                  <ItineraryMap
+                    days={itineraryData.days}
+                    destinationTitle={itineraryData.destinationTitle}
+                    isCollapsible={true}
+                  />
                 )}
-                <span className="text-[11px] text-slate-400">
-                  Ref: <strong className="text-slate-600">{itineraryData.refNumber}</strong>
-                </span>
-              </div>
+
+                {activeView !== "map" && (
+                  <LivePreview
+                    ref={previewRef}
+                    itineraryData={itineraryData}
+                    mapImageBase64={mapImageBase64}
+                    onUpdateField={handleFieldChange}
+                  />
+                )}
+
+                {/* Hidden Travel Voucher DOM Container for client-side html2pdf export */}
+                <div className="hidden">
+                  <TravelVoucherPDF itineraryData={itineraryData} agencySettings={agencySettings} />
+                </div>
+              </section>
             </div>
 
-            {/* Interactive Leaflet Route Map directly above Live Preview */}
-            {(showRouteMap || activeView === "map") && (
-              <ItineraryMap
-                days={itineraryData.days}
-                destinationTitle={itineraryData.destinationTitle}
-                isCollapsible={true}
-              />
-            )}
-
-            {activeView !== "map" && (
-              <LivePreview
-                ref={previewRef}
-                itineraryData={itineraryData}
-                mapImageBase64={mapImageBase64}
-                onUpdateField={handleFieldChange}
-              />
-            )}
-
-            {/* Hidden Travel Voucher DOM Container for client-side html2pdf export */}
-            <div className="hidden">
-              <TravelVoucherPDF itineraryData={itineraryData} agencySettings={agencySettings} />
-            </div>
-          </section>
-        </div>
-
-        {/* ── Recent Tour Itineraries Table (Matches User Screenshot) ── */}
-        <RecentItinerariesTable
-          itineraries={itinerariesList}
-          onEdit={(item) => {
-            handleLoadItinerary(item);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          onView={(item) => {
-            handleLoadItinerary(item);
-            setActiveView("preview");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          onDuplicate={handleDuplicateItinerary}
-          onDelete={handleDeleteItinerary}
-          onExportPdf={(item) => {
-            handleLoadItinerary(item);
-            setTimeout(() => handleExportPdf(), 300);
-          }}
-          onExportVoucher={(item) => {
-            handleLoadItinerary(item);
-            setTimeout(() => handleExportVoucher(), 300);
-          }}
-        />
-      </main>
+            {/* ── Recent Tour Itineraries Table ── */}
+            <RecentItinerariesTable
+              itineraries={itinerariesList}
+              onEdit={(item) => {
+                handleLoadItinerary(item);
+                setMainTab("itinerary");
+                setActiveView("editor");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              onView={(item) => {
+                handleLoadItinerary(item);
+                setMainTab("itinerary");
+                setActiveView("preview");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              onDuplicate={handleDuplicateItinerary}
+              onDelete={handleDeleteItinerary}
+              onExportPdf={(item) => {
+                handleLoadItinerary(item);
+                setTimeout(() => handleExportPdf(), 300);
+              }}
+              onExportVoucher={(item) => {
+                handleLoadItinerary(item);
+                setTimeout(() => handleExportVoucher(), 300);
+              }}
+            />
+          </main>
+        </>
+      )}
 
       {/* Mobile Bottom Sticky Navigation Bar */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-2 z-40 shadow-lg flex items-center justify-around pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))]">
         <button
           type="button"
           onClick={() => {
+            setMainTab("itinerary");
             setActiveView("editor");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all min-h-[44px] cursor-pointer active:scale-90 ${
-            activeView === "editor"
+            mainTab === "itinerary" && activeView === "editor"
               ? "text-blue-700 bg-blue-50 font-extrabold shadow-2xs"
               : "text-slate-500 hover:text-slate-800"
           }`}
@@ -706,11 +809,12 @@ export default function App() {
         <button
           type="button"
           onClick={() => {
+            setMainTab("itinerary");
             setActiveView("preview");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all min-h-[44px] cursor-pointer active:scale-90 ${
-            activeView === "preview"
+            mainTab === "itinerary" && activeView === "preview"
               ? "text-blue-700 bg-blue-50 font-extrabold shadow-2xs"
               : "text-slate-500 hover:text-slate-800"
           }`}
@@ -722,12 +826,13 @@ export default function App() {
         <button
           type="button"
           onClick={() => {
+            setMainTab("itinerary");
             setShowRouteMap(true);
             setActiveView("map");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all min-h-[44px] cursor-pointer active:scale-90 ${
-            activeView === "map"
+            mainTab === "itinerary" && activeView === "map"
               ? "text-blue-700 bg-blue-50 font-extrabold shadow-2xs"
               : "text-slate-500 hover:text-slate-800"
           }`}

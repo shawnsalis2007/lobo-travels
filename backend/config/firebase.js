@@ -45,7 +45,20 @@ function initFirebase() {
           });
           db = admin.firestore();
           isFirestoreAvailable = true;
-          console.log(`🔥 [Firebase] Initialized successfully using: ${keyPath}`);
+          console.log(`🔥 [Firebase] Initialized with key at: ${keyPath}`);
+
+          // Probe Firestore authentication to ensure immediate zero-latency fallback if expired
+          db.collection("_probe").limit(1).get()
+            .then(() => {
+              isFirestoreAvailable = true;
+              console.log("🔥 [Firebase Firestore] Live and fully authenticated");
+            })
+            .catch((probeErr) => {
+              isFirestoreAvailable = false;
+              console.warn("⚠️ [Firebase Firestore] Auth notice:", probeErr.message);
+              console.log("⚡ [Fast Cache] Operating in instant in-memory store for 100% responsiveness");
+            });
+
           return db;
         } catch (jsonErr) {
           console.error(`⚠️ [Firebase] Failed to parse JSON key at ${keyPath}:`, jsonErr.message);
@@ -69,6 +82,16 @@ function initFirebase() {
       db = admin.firestore();
       isFirestoreAvailable = true;
       console.log("🔥 [Firebase] Initialized with inline environment variables");
+
+      db.collection("_probe").limit(1).get()
+        .then(() => {
+          isFirestoreAvailable = true;
+        })
+        .catch((probeErr) => {
+          isFirestoreAvailable = false;
+          console.warn("⚠️ [Firebase] Inline credentials notice:", probeErr.message);
+        });
+
       return db;
     }
 
